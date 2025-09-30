@@ -1,0 +1,2278 @@
+% !TEX program = pdflatex
+\documentclass[11pt]{article}
+
+% === Packages ===
+\usepackage[a4paper,margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepgfplotslibrary{fillbetween}
+\usetikzlibrary{arrows.meta} 
+\usepackage{autobreak}
+\usepackage{bm}
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage[hidelinks]{hyperref}
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage{enumitem}
+\setlist{nosep}
+
+\emergencystretch=2em
+
+% === Theorem environments (uniform upright) ===
+
+\newtheoremstyle{upright}%
+  {3pt}{3pt}%   Space above/below
+  {\normalfont}% Body font (upright)
+  {}%           Indent amount
+  {\bfseries}%  Head font
+  {.}%          Punctuation after head
+  {.5em}%       Space after head
+  {}%           Head spec
+
+\theoremstyle{upright}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+\newtheorem{corollary}{Corollary}
+\newtheorem{proposition}{Proposition}
+\newtheorem{definition}{Definition}
+\newtheorem{remark}{Remark}
+
+
+% === Macros ===
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Var}{\operatorname{Var}}
+\newcommand{\Prb}{\mathbb{P}}
+\newcommand{\diff}{,\mathrm{d}}
+\newcommand{\horizon}{\Lambda}
+\newcommand{\Lap}[1]{\widehat{#1}}
+\newcommand{\Ne}{N_{\mathrm{e}}}
+\newcommand{\seff}[1][]{s_{\mathrm{eff}\if\relax\detokenize{#1}\relax\else,#1\fi}}
+\newcommand{\Lmax}{\horizon^{(T)}_{\max}}
+\newcommand{\BK}{\mathcal{B}}
+\newcommand{\Uset}{\mathcal{U}}
+\newcommand{\Hset}{\mathcal{H}}
+% --- Safe helpers to avoid fragile superscripts / spacing ---
+\newcommand{\sstar}{^{\star}}   % star superscript
+\newcommand{\astar}{^{\ast}}    % asterisk superscript
+\newcommand{\teq}{\mathrel{\!=\!}} % tight equals (=) in math
+\newcommand{\madot}{\mathpunct{.}} % baseline period inside math
+
+% --- Hazard notation & macros (preamble) ---
+\newcommand{\haz}{\Lambda}                     % base hazard symbol
+\newcommand{\hazT}[1]{\Lambda^{(#1)}}          % lag-matched block hazard
+\newcommand{\hazmaxT}[1]{\Lambda^{(#1)}_{\max}}% worst admissible at lag
+\newcommand{\lam}{\lambda}                      % per-season instantaneous
+
+\renewcommand{\Lmax}{\Lambda_{\max}}
+
+% === Title ===
+\title{Where Sex Wins: A Minimax Account of Hazard-Discounted Selection on Ordered Landscapes}
+\author{\normalsize Lorand Bruhacs}
+\date{\normalsize \today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Sex can be slower than asex on order-constrained landscapes (Kondrashov \& Kondrashov), yet persist. We model ecological hazards as Feynman--Kac (FK) discounting that limits the \emph{Effective Selection Horizon} (ESH)---the future over which selection is realized. Embedding ESH in a \emph{minimax} game between an adversarial environment (raising block hazards) and lineages (allocating limited buffering) yields a saddle-point boundary for when sex wins despite slower allele replacement. A single inequality in the lag-scale hazard $\horizon^{(T)}$ and slowdown ratio $r$ delineates regions where hazard reduction outvalues speed. A cumulant renormalization-group (RG) view shows variance/skew corrections that expand this region and synchrony that contracts it. An appendix recovers Kimura, Hamilton/Fisher, bet-hedging, LD interference, and evolutionary rescue as limits—showing that ESH offers a single, conservative accounting in which these classics sit naturally alongside the minimax boundary.
+\end{abstract}
+
+\tableofcontents
+
+\section{Introduction}
+\label{sec:intro}
+
+Why does sex persist? Few questions in evolutionary biology have generated so
+much theory and so little consensus. This plurality is unsurprising. At a broad intuitive level, most biologists
+would agree on two heuristics. First, \emph{hazards matter}: ecological risks
+such as predation, failed pairing, or harsh seasons can destroy lineages before
+they realize the benefits of a new trait. Second, \emph{variance helps}: when
+environments fluctuate, bursts of favorable conditions can magnify the long-run
+impact of selection, even if average conditions look poor. These ideas recur in
+many guises---Fisher’s and Hamilton’s treatment of sex ratios, Kimura’s drift
+threshold, and bet-hedging through geometric mean fitness. Yet as scientifically
+correct as they are, they often remain at the level of qualitative wisdom.
+
+The aim of this note is to quantify those intuitions in a way that makes them
+directly comparable across settings. Our approach
+introduces a simple accounting device, the \emph{Effective Selection Horizon}
+(ESH). It formalizes how much of a delayed payoff survives hazard discounting
+and how variance and skew in the environment shift the usable horizon of
+selection. The mathematics is compact: a Laplace transform for timing,
+corrected by the Kimura drift floor, and---when hazards fluctuate---a cumulant expansion
+for variance and skew. This buys us more than notation. It delivers clean,
+one-line inequalities for when selection is effective, shows why variance
+typically helps while skew harms, and recovers classical results as limiting
+cases. In short, the machinery converts “hazards matter” from a truism into a
+quantitative boundary.
+
+Why bring this machinery to bear on the evolution of sex? Because the \citet{Kondrashov2001} 
+paradox illustrates exactly where intuitive arguments run out.
+On ordered landscapes, recombination slows progress by disrupting partially
+completed steps, so asexual lineages adapt faster. Intuition alone suggests
+that sex might nevertheless gain if it \emph{lengthens the usable future} by buffering hazards.
+But how much buffering is enough? Which aspects of variability actually help,
+and which hurt? And under what conditions does a slower sexual path still win?
+
+Our completion of K\&K also makes their result feel inevitable rather than anomalous.
+If variance and buffering can be adaptive, why isn’t sex universal?
+K\&K supply a necessary counterfactual: on ordered landscapes, recombination 
+lengthens the completion lag, so a slower sexual path can \emph{lose} even when variance helps.
+In our accounting this is the tempo penalty term in the boundary
+\[
+u \;>\; 1-\frac{1}{r}\;+\;\text{(cost/drift surcharge)},
+\qquad r:=T_S/T_A,
+\]
+which sex must overcome by buying horizon (hazard cuts at the lag scale).
+Thus K\&K anchor the “speed side’’ of the tradeoff and open the door to a deeper 
+examination of when variance and buffering suffice—and when they do not.
+
+\paragraph{Reader’s roadmap (fast lane).}
+Section~\ref{sec:esh} introduces the Effective Selection Horizon (ESH) as a way to count only the part of a delayed payoff that actually survives hazards. 
+Section~\ref{sec:block-hazard} matches the analysis to the trait’s own delay by summarizing many seasons of risk into one “block hazard” at that delay. 
+Section~\ref{sec:minimax} then frames a conservative comparison: the environment stacks the deck within realistic limits, while sex invests limited buffering. 
+Section~\ref{sec:saddle} gives the one-line boundary that says when a slower sexual path still wins. 
+Section~\ref{sec:phase} turns this into a phase diagram with a simple “Fermi” overlay for quick, order-of-magnitude placement. 
+Appendices collect classical limits, optimization details, and the probabilistic backbone.
+
+\paragraph{Intuition: why a block hazard and scale matching?}
+Many traits don’t pay off right away. If a benefit arrives after several seasons, what matters isn’t the average risk per season in isolation, but the combined exposure across the whole waiting period. The “block hazard” is just a single summary of that multi-season exposure, tuned to the trait’s own delay. It answers: “Given the ups and downs of the environment, how much of that future is usually still left by the time the benefit would arrive?”
+
+Three takeaways make this lens useful:
+\begin{itemize}
+\item[$\square$]  \textbf{Match the scale to the trait.} A trait with a longer delay “sees” more of the environment before it pays off. Summarizing risk at the trait’s delay prevents us from over- or under-valuing late benefits.
+\item[$\square$]  \textbf{Good stretches help, rare spikes hurt.} Benign seasons sprinkled into the waiting period make it more likely the payoff survives to be realized; rare, intense bad seasons do the opposite. The block view naturally captures both effects.
+\item[$\square$]  \textbf{Order inside the block matters less than the mix.} For survival to the payoff, it’s the mix of good and bad seasons across the delay that dominates; the exact order within that window rarely changes the conclusion.
+\end{itemize}
+
+\paragraph{Conceptual synthesis (one principle, limited scope).}
+The single organizing principle here is \emph{predictable survival of delayed payoffs}: realized selection is “what arrives \emph{and} survives.” ESH formalizes that by tilting a payoff profile through the environment’s survival and matching the tilt to the trait’s lag. Classical results re-enter as special views through this same lens: immediate payoffs (Kimura), mating hazard as a component of survival (Fisher/Hamilton), short-lag multiplicative growth (bet-hedging), LD effects with ESH-tilted coefficients (Hill–Robertson signs), and rescue as a race of a selection clock versus a failure clock with both priced in the same currency. This is a \emph{partial} synthesis along the timing/hazard axis—not a claim that all mechanisms reduce to one law.
+
+\paragraph{What sex can change (at this scale).}
+On ordered landscapes, sex often slows the construction of the final genotype. But sex can also buy time for selection by reducing exposure in the risky window before payoffs are realized. The phase line in this paper asks a simple question: “Is the time you can buy with hazard buffering enough to offset the time you lose by going slower?” Our boundary answers that conservatively—under worst credible hazards—so the true favorable region for sex is typically larger once additional real-world effects are included.
+
+\section{Related work and positioning}\label{sec:related}
+
+\paragraph{Ordered landscapes and the paradox for sex.}
+\citet{Kondrashov2001} formalized a setting in which recombination disrupts partially completed sequences on ordered/epistatic landscapes, increasing the completion lag for finished genotypes and allowing asexual lineages to advance faster (tempo-first logic). Our analysis adopts this as the foil rather than a point of disagreement: in the benign limit (long horizons, negligible discounting) our boundary collapses to their speed ordering.
+
+\paragraph{Epistasis and ordered landscapes.}
+The K\&K result remains a touchstone in debates over the adaptive value of recombination on ordered landscapes. Later work deepened the understanding of how \emph{epistasis and genetic constraints} shape evolutionary trajectories. For example, \citet{Weinreich2005} showed that \emph{sign epistasis} sharply limits accessible mutational paths, while \citet{deVisser2014} reviewed empirical fitness landscapes to assess the predictability of adaptive routes. These studies reinforce the intuition that recombination can disrupt partially completed assemblies, but they also highlight the diversity of constraints that govern whether sexual or asexual lineages advance more efficiently on rugged landscapes.
+
+\paragraph{Constraints, higher-order interactions, and buffering.}
+Subsequent developments have clarified how complexity and higher-order interactions bear on the Kondrashov paradox. Work on \emph{protein evolution} demonstrates that Dobzhansky–Muller incompatibilities naturally arise as ordered adaptive steps accumulate \citep{Kondrashov2002}. Empirical landscapes in yeast reveal widespread genetic complexity underlying quantitative traits \citep{Brem2005}, while experiments show that initial mutations can canalize populations into alternative adaptive pathways \citep{Salverda2011}. More recently, attention has turned to \emph{higher-order epistasis} as a potentially decisive but under-appreciated constraint on adaptation \citep{Weinreich2013}. Alongside evidence that \emph{cryptic genetic variation} enables rapid adaptation under new hazards \citep{Hayden2011}, these findings frame the sex–asex comparison as a question of how recombination interacts not only with tempo but with the structure of constraint itself.
+
+\paragraph{Drift thresholds and sex ratio theory.}
+Kimura’s small-$s$ drift threshold and Fisher--Hamilton’s ESS sex-ratio principle are canonical limiting cases in which hazards either vanish (immediate payoffs) or are encoded through mating-failure costs. In our framework these appear directly by setting $b(\tau)=s\,\delta_0(\tau)$ (Kimura) or minimizing the mating hazard $\Lambda_{\mathrm{mate}}(x)$ under symmetric/asymmetric investment costs (Fisher--Hamilton).
+
+\paragraph{Stochastic demography, bet-hedging, and cumulants.}
+Long-run growth in fluctuating environments is governed by geometric means and log-moment generating functions; classical bet-hedging results show a variance penalty of $-\tfrac12\Var(s)$ for immediate payoffs (Gillespie; Tuljapurkar \citep{Tuljapurkar1982} and successors). ESH inherits this structure: the Laplace tilt $\widehat b(\Lambda)$ supplies the timing lens, while the block hazard $\hazT{T}$ organizes mean–variance–skew effects at the trait’s lag.
+
+\paragraph{Recombination, LD, and fluctuating environments.}
+The Hill–Robertson argument\citep{HillRobertson1966} (and later work on recombination in heterogeneous environments) connects epistasis, LD generation, and the erosion of coupling by recombination. Our contribution is not a new LD calculus; it is to replace raw coefficients by ESH-tilted ones, making “epistasis under finite horizons’’ explicit and allowing variance/hazard structure to modify the recombination tradeoff on ordered steps.
+
+\paragraph{Evolutionary rescue and competing clocks.}
+Population persistence under deterioration is often framed as a race between genotypic correction and demographic failure (e.g., Gomulkiewicz \& Holt and later syntheses). ESH puts both clocks on the same currency: the usable-seasons slope $(1-\pi_>)\bar s_{<}$ and the failure-time scaling compare directly, giving a one-line rescue criterion that reduces to the standard threshold in constant/immediate-payoff limits.
+
+\paragraph{Feynman--Kac, coarse-graining, and RG.}
+The ESH is a Laplace transform of the payoff profile; the lag-matched hazard is a block log-mgf (a “free energy’’). Coarse-graining hazards over the benefit lag $T$ yields $\hazT{T}$, with a cumulant expansion (mean, variance, skew, correlation) that cleanly separates which features of environmental variability are relevant at that scale. This RG-style step is not heavy physics; it is the natural way to analyze hazard structure at the trait’s timescale.
+
+\paragraph{Free energy and information--theoretic readings.}
+The Donsker--Varadhan variational identity interprets $\hazT{T}$ as a convex tradeoff between lowering expected hazard and paying an information cost (KL divergence) to reweight exposure. Prior work has drawn free-energy parallels in evolutionary settings and linked growth in fluctuating environments to information measures; here that lens is applied directly to hazard-discounted horizons and the sex–asex boundary. Our goal is not to subsume full theories but to place diverse results on a \emph{common timing currency}. Where that axis is relevant, ESH provides a single accounting; where other axes dominate, the classical analyses remain primary.
+
+\paragraph{Robust/minimax framing and portfolios.}
+Casting the environment as an adversary choosing hazards within an uncertainty set aligns with robust optimization. In the small-control regime the sexual advantage is linear in control (weights $B T e^{-\hazT{T}T}$), making allocation convex (or submodular in a bucketed version) and yielding standard approximation guarantees. Across multiple traits, leverage adds as $\|w\|_1$ while the adversary’s worst-case penalty scales like $\|w\|_2$ under covariance bounds, explaining the diversification effect that enlarges the sex-wins region.
+
+\paragraph{What is new here.}
+To our knowledge, what is novel is the synthesis: (i) a single \emph{Effective Selection Horizon} that recovers Kimura, Fisher/Hamilton, bet-hedging, Hill–Robertson signs, and rescue as limits; (ii) a \emph{lag-matched} block hazard $\hazT{T}$ that makes variance/skew/synchrony corrections explicit at the trait’s timescale; and (iii) a \emph{minimax} inequality that states, in one line, when a slower sexual path still prevails on ordered landscapes. We do not claim a general theory of sex; the contribution is a conservative completion of the ordered-ladder paradox under realistic hazard timing, together with a compact boundary that is falsifiable and extends naturally to multi-trait portfolios. We view this as a \emph{conservative reframing}: it preserves classical limits exactly while replacing raw tempo by realized, hazard–tilted selection and evaluating ordered slowdowns under a worst-admissible lag-scale hazard.
+
+% (Add citations here to: Kondrashov & Kondrashov; Kimura; Fisher, Hamilton; Gillespie; Tuljapurkar; Hill & Robertson; recombination in heterogeneous environments; Gomulkiewicz & Holt; Sella & Hirsh; Rivoire & Leibler; standard robust optimization and submodular maximization references.)
+
+\section{Problem: Ordered adaptation under hazard}
+
+\paragraph{Why the K\&K puzzle needs a timing currency.}
+\citet{Kondrashov2001}'s ordered-ladder insight is a tempo result: when beneficial change requires steps in a prescribed order, recombination disrupts partially completed sequences and increases the \emph{completion lag} for the finished genotype. Asexual lineages, by contrast, can overlap successive replacements along a clonal backbone and achieve a shorter lag. Let $T_A$ and $T_S$ denote the characteristic completion lags under asex and sex, respectively, with $T_S>T_A$ on such landscapes. On tempo alone this favors asex. But adaptive returns only matter if lineages \emph{survive} until the payoff is realized. Thus the puzzle is ill-posed without a way to put “how fast benefits arrive” and “how much future survives” onto the same scale.
+
+\paragraph{Hazards as the missing unit of account.}
+Real populations face stochastic hazards—failed pairing, predation, harsh seasons, disturbance—that thin lineages through time. Let $\{\Lambda_t\}_{t\ge 0}$ denote the (per-time) hazard process. For a payoff realized after delay $\tau$, only the fraction that \emph{survives} the intervening hazards can contribute to selection. We therefore need a \emph{survival weight} $W(\tau)\in[0,1]$ with two properties that suffice for this section: (i) $W(0)=1$ and $W(\tau)$ decreases with $\tau$; (ii) under stationary, mixing hazards there exists an \emph{effective lag-matched rate} $\Lambda^{(\tau)}$ such that, for the lags of interest, $W(\tau)$ behaves \emph{approximately} like an exponential tilt, $W(\tau)\approx \exp\!\{-\Lambda^{(\tau)}\tau\}$. Intuitively: higher background hazard shrinks the “usable future,” steeply discounting late payoffs. Section~\ref{sec:esh} formalizes $W(\tau)$ exactly via a Laplace tilt of the payoff profile (the ESH), and Section~\ref{sec:block-hazard} shows how the effective rate $\Lambda^{(\tau)}$ is obtained by coarse-graining hazards over the trait’s lag.
+
+\paragraph{From genotype paths to payoff time-profiles.}
+To compare sex and asex fairly we focus on \emph{when} their benefits materialize, not just \emph{what} the eventual benefits are. Let $b(\tau)\ge0$ be the benefit time-profile of a focal trait or completed genotype (a single spike at $\tau=T$ for a pure “ordered ladder,” or a spread if partial progress pays). The realized contribution to selection must weight $b(\tau)$ by survival $W(\tau)$ and subtract costs and drift. The key intuition: hazards convert time-to-payoff into realized effect. A mode can deliver a large eventual benefit and yet make almost no realized contribution if it arrives beyond the usable horizon.
+
+\paragraph{Two clocks, one currency.}
+Once hazards supply the currency, the tradeoff becomes a race between two clocks: (i) a \emph{correction clock} that accumulates realized selection whenever the environment leaves some horizon to work with, and (ii) a \emph{failure clock} driven by demographic drift and bad runs of seasons. The sex–asex comparison is no longer “who completes first,” but “who generates more realized selection \emph{before} failure.” This reframing opens the door to formalizing the intuition that a slower sexual path can win when it \emph{buys time}—by lowering the effective hazard it lengthens the horizon and increases the fraction of seasons that are actually usable for selection. 
+
+\paragraph{What changes under sex (and what does not).}
+On ordered landscapes we take as given that sex typically increases lag ($T_S>T_A$) by breaking partial assemblies (the K\&K mechanism). What sex can change is exposure to hazards. Pre-fusion control, mate-finding buffers, variance reduction, or desynchronization can lower the block hazard by some $U$ at the relevant lag scale. The qualitative decision boundary already peeks through in the single-lag cartoon: the “area” of the hazard cut $U\cdot T_S$ must outweigh the “area” of the slowdown $\Lambda\cdot(T_S-T_A)$ (plus any costs). The following sections make this precise, first by defining ESH, then by showing—via a minimax frame—that the pertinent hazard is the worst admissible block hazard at the trait’s lag, and finally by deriving a sharp inequality that delineates where sex wins. Empirical comparative studies confirm that sexual lineages often evolve sex-specific mechanisms 
+that buffer hazard before or during fertilization \citep{Promislow1992, Maklakov2013}.
+
+\paragraph{Modeling choices and scope.}
+We assume (A1) an ordered/epistatic component that fixes $T_A,T_S$ (data- or model-derived), (A2) a stationary–ergodic hazard process with measurable components (mating, ecological, disturbance), (A3) costs $c$ and drift floor $\kappa/\Ne$ that are small relative to eventual benefits but not negligible, and (A4) small, targeted hazard control $U$ available to sex (pre-fusion buffering\footnote{By \emph{pre-fusion buffering} we mean mechanisms that reduce the effective hazard to successful gamete fusion or zygote formation \emph{before} syngamy. Examples span taxa: (i) \textbf{broadcast spawners}—gamete chemoattraction and species-specific bindin/ligand systems, timed/synchronized spawning, gamete clouds and spawning site choice that raise encounter rates; (ii) \textbf{internal fertilizers}—mate-finding and courtship rituals, nuptial gifts, sperm storage organs (spermathecae/oviductal reservoirs), cervical mucus modulation and cryptic female choice that prolong viable residence, copulatory plugs and seminal coagulation that protect sperm; (iii) \textbf{post-mating, prezygotic} barriers that \emph{promote} conspecific fertilization (e.g., conspecific sperm precedence, zona pellucida/egg coat receptor tuning) thereby reducing wasted matings; (iv) \textbf{reproductive timing insurance}—iteroparity in spawning bouts, bet-hedged oviposition/ovulation timing, and diel/seasonal synchronization that place gametes in favorable microenvironments; (v) \textbf{microenvironmental shielding}—mucus sheaths, seminal plasma antioxidants, and accessory gland proteins that buffer pH, osmotic stress, or immune attack in the reproductive tract; (vi) \textbf{behavioral or spatial tactics}—lekking, mate-guarding, and nest construction that concentrate encounters and reduce predation or dilution during the vulnerable pre-fusion window. These examples are illustrative, not exhaustive; the mathematics treats any such hazard reduction as a control that lowers the lag-matched block hazard.}), with convex cost. These are deliberately conservative: in the limit $\Lambda^{(\tau)}\downarrow 0$ (benign environments) our accounting reverts to K\&K’s speed logic; in harsh, short-horizon regimes the hazard currency dominates and the potential for sex to win emerges. The next section formalizes the ESH object that implements this accounting without further assumptions or duplication.
+
+\section{Effective Selection Horizon: definition and boundary}
+\label{sec:esh}
+\paragraph{Accounting identity (FK discounting).}
+Let $b(\tau)\ge 0$ be the time-profile of benefit for the focal trait/genotype (units: selection per unit time at delay $\tau$). Given a hazard process $\{\Lambda_t\}$, the survival weight for a payoff at delay $\tau$ is the Feynman--Kac factor
+
+$$
+W(\tau)\;=\;\mathbb{E}\!\left[\exp\!\Big(-\int_0^\tau \Lambda_t\,dt\Big)\right].
+$$
+
+Under mild mixing, $W(\tau)$ is well-approximated by an exponential tilt $e^{-\Lambda \tau}$ at the relevant lag scale (made precise in Section~\ref{sec:block-hazard} via the block hazard $\hazT{T}$). The \emph{realized selection} is then the Laplace transform of $b$ at $\Lambda$ minus costs and drift:
+\begin{equation}
+\label{eq:ESH-def}
+\seff(\Lambda)=\widehat b(\Lambda)-\big(c+\kappa/\Ne\big),
+\qquad
+\widehat b(\Lambda)=\int_{0}^{\infty} e^{-\Lambda \tau}\, b(\tau)\,\mathrm{d}\tau.
+\end{equation}
+Equation~\eqref{eq:ESH-def} is the Effective Selection Horizon (ESH): hazards convert time-to-payoff into realized effect by exponentially tilting the payoff profile.
+
+\paragraph{Basic properties (monotonicity, tilted moments, convexity).}
+Because $b(\tau)\ge 0$, $\widehat b(\Lambda)$ is continuous, strictly decreasing, and strictly convex in $\Lambda$. Differentiating under the integral gives
+
+$$
+\frac{d}{d\Lambda}\widehat b(\Lambda)\;=\;-\int_0^\infty \tau\,e^{-\Lambda \tau} b(\tau)\,d\tau
+\;=\; -\,\mu_\Lambda\,\widehat b(\Lambda),
+$$
+
+where
+
+$$
+\mu_\Lambda\;:=\;\frac{\int_0^\infty \tau\,e^{-\Lambda \tau} b(\tau)\,d\tau}{\int_0^\infty e^{-\Lambda \tau} b(\tau)\,d\tau}
+$$
+
+is the \emph{FK-tilted mean lag}. Thus the log-slope is the negative of the (hazard-tilted) mean lag, and the second derivative can be written as
+
+$$
+\frac{d^2}{d\Lambda^2}\log \widehat b(\Lambda)\;=\;\operatorname{Var}_\Lambda[\tau]\;\ge 0,
+$$
+
+the variance of $\tau$ under the tilted density proportional to $e^{-\Lambda \tau} b(\tau)$. Intuition: increasing hazard shifts weight toward earlier portions of $b(\tau)$, shortening the effective lag and increasing curvature.
+
+\paragraph{Variational reweighting.}
+The Feynman--Kac path integral formalism provides a powerful way to analyze stochastically evolving populations by weighting paths according to survival or reproductive success. In practice, this corresponds to an exponential tilting of path probabilities – effectively a variational reweighting that highlights rare but important trajectories (e.g. those leading to persistence or rapid adaptation) \citep{Mustonen2010}.
+
+\paragraph{Perspective.}
+The Laplace tilt is a small mathematical device with a large interpretive payoff:
+it is a lens that brings early benefits into focus and pushes late ones into blur.
+What we call the Effective Selection Horizon is just this lens set to the local aperture.
+
+\paragraph{Horizon boundary and existence.}
+Define the \emph{horizon boundary} $\Lambda_c$ as the unique solution (if it exists) of
+\begin{equation}
+\label{eq:horizon-boundary}
+\widehat b(\Lambda_c)=c+\kappa/\Ne.
+\end{equation}
+Because $\widehat b$ is strictly decreasing with $\widehat b(0)=B_0:=\int_0^\infty b(\tau)\,d\tau$ and $\widehat b(\Lambda)\to 0$ as $\Lambda\to\infty$, a solution exists iff $B_0>c+\kappa/\Ne$. Seasons (or blocks) with $\Lambda\ge \Lambda_c$ are \emph{beyond the horizon}: even the full eventual benefit fails to clear costs + drift once discounting is applied. This boundary is the single scalar gate we carry forward into mixture, minimax, and phase-diagram results.
+
+\paragraph{Readouts and scaling (single-lag, light vs heavy tails).}
+For a pure ordered step with lag $T$ (i.e., $b(\tau)=B\,\delta(\tau-T)$), $\widehat b(\Lambda)=B e^{-\Lambda T}$ and $\seff=B e^{-\Lambda T}-c-\kappa/\Ne$. The latest admissible lag is $T_{\max}=(1/\Lambda)\log\!\frac{B}{c+\kappa/\Ne}$: the usable horizon shrinks $\propto 1/\Lambda$. For \emph{light-tailed}  $b$ (finite moments), as $\Lambda$ grows the tilted mean lag decays like $\mu_\Lambda=O(1/\Lambda)$, so the “mass that matters” concentrates into a window of width $\sim 1/\Lambda$. For \emph{heavy-tailed} $b$ with power-law tail index $\alpha\in(0,1)$ (regularly varying tail at large $\tau$), a Tauberian correction implies
+
+$$
+\widehat b(\Lambda)\;=\;B_0\;-\;K\,\Lambda^{\alpha}\big(1+o(1)\big)\quad\text{as }\Lambda\downarrow 0,
+$$
+
+so hazards initially erode realized benefit sublinearly—\emph{discounting is softened but not removed}—and a finite $\Lambda_c$ still exists whenever $B_0>c+\kappa/\Ne$. A convenient “$\varepsilon$-horizon” scaling is
+
+$$
+T_\varepsilon\;\gtrsim\;\frac{1}{\Lambda}\,\log\!\frac{B_0}{\varepsilon},
+$$
+
+capturing that the useful mass above level $\varepsilon$ decays on the $1/\Lambda$ timescale.
+
+\paragraph{Sanity checks (classical limits).}
+Equation~\eqref{eq:ESH-def} collapses to familiar results in the right limits: with \emph{immediate payoffs}  $b(\tau)=s\,\delta(\tau)$, $\widehat b(\Lambda)=s$ and $\seff=s-(c+\kappa/\Ne)$, i.e., the \emph{Kimura} drift threshold; with \emph{negligible hazards} $\Lambda\downarrow 0$, $\widehat b\to B_0$ and the ESH reduces to undiscounted total benefit minus costs/drift. These recoveries justify treating ESH as a conservative extension rather than a new mechanism.
+
+\paragraph{Connection to Doob--Meyer.}
+For completeness, Appendix~\ref{sec:doob-meyer} shows that the Laplace tilt in \eqref{eq:ESH-def} is not an ansatz but the predictable survival from a standard Doob--Meyer decomposition: integrating the payoff profile against the at-risk process $S_t$ yields $\E[\int b(t)S_t\,dt]=\int b(t)\,\E[\exp(-\int_0^t \lambda_s ds)]\,dt$. This explains why hazards \emph{add} in the exponent (competing risks add in the compensator), why control acts on the predictable part (trim the compensator, not the martingale), and why coarse-graining over the benefit lag naturally produces the block hazard $\hazT{T}$ used throughout.
+
+\paragraph{Bridge to scale-matching and minimax.}
+The scalar $\Lambda$ in \eqref{eq:ESH-def} is a placeholder for the \emph{lag-matched block hazard} $\hazT{T}$ introduced next (Section~\ref{sec:block-hazard} ), which incorporates variance/skew via a cumulant expansion. Plugging $\hazT{T}$ into \eqref{eq:horizon-boundary} gives a data-facing $\Lambda_c$ and, via seasonal/block mixture (Section~\ref{sec:block-hazard} ), the realized selection slope that races the demographic clock. This is the quantity the environment will try to worsen and sex will try to improve in the \emph{minimax}  formulation (Section~\ref{sec:minimax} ), leading to the robust boundary where sex wins.
+
+\paragraph{The single-lag cartoon (ordered step).}
+For an ordered ladder whose payoff arrives only upon completion at delay $T$ (i.e., $b(\tau)=B\,\delta(\tau-T)$), the realized selection in a block with hazard $\Lambda$ is
+
+$$
+\seff(\Lambda)\;=\;B\,e^{-\Lambda T}-c-\kappa/\Ne,
+\qquad
+T_{\max}\;=\;\frac{1}{\Lambda}\log\!\frac{B}{\,c+\kappa/\Ne\,}.
+$$
+
+Two immediate readouts matter downstream: (i) the \emph{leverage of hazard cuts}  near $\Lambda$ is $\partial \seff/\partial U = T\,B\,e^{-\Lambda T}$, so discount relief buys value proportional to the lag; (ii) the \emph{admissible lag} $T_{\max}$ shrinks $\propto 1/\Lambda$, making late-arriving benefits effectively invisible when hazards are high.
+
+\paragraph{Seasonal mixture and the “usable seasons” slope.} %%foo
+Across seasons (or blocks), hazards fluctuate. Define the horizon boundary $\Lambda_c$ and the indicator $I_t:=\mathbf 1\{\Lambda_t<\Lambda_c\}$ for seasons that are \emph{within} horizon. Let
+
+$$
+\pi_{>} \;:=\; \Pr(\Lambda_t\ge \Lambda_c),\qquad
+\bar s_{<} \;:=\; \mathbb E\!\left(\big[\seff(\Lambda_t)\big]_+ \,\middle|\, \Lambda_t<\Lambda_c\right).
+$$
+
+The per-season realized selection $X_t := [\seff(\Lambda_t)]_+$ is bounded and, under mild mixing, obeys a law of large numbers with concentration. Writing $S_n=\sum_{t=1}^n X_t$, we get the \emph{usable-seasons slope}
+
+$$
+\frac{S_n}{n}\;\xrightarrow{\;\text{a.s.}\;}\; (1-\pi_{>})\,\bar s_{<},
+\quad\text{and}\quad
+\Pr\!\left(\left|\frac{S_n}{n}-(1-\pi_{>})\bar s_{<}\right|>\epsilon\right)\;\lesssim\;\exp\!\big(-c_\star n\epsilon^2\big),
+$$
+
+for some $c_\star>0$ (e.g., Bernstein/Hoeffding bounds for $\alpha$-mixing arrays). Intuition: beyond-horizon seasons contribute essentially nothing; within-horizon seasons contribute a stable average $\bar s_{<}$.
+
+\paragraph{Hoeffding in mixed environments.}
+Even when environmental outcomes vary seasonally or stochastically, the law of large numbers ensures that long-term averages converge with high probability to their expectation. In practice, one can apply concentration inequalities (e.g. Hoeffding’s inequality) to bound the probability that the realized mean fitness in a mixture of seasonal environments deviates significantly from the expected value \citep{Hoeffding1963}. This formalizes the idea that over many seasons, the observed growth rate will tightly cluster around the predicted value, with exponentially small chances of large deviation.
+
+\paragraph{A correction clock from a required selection budget.}
+Let $L$ denote the cumulative selection “budget” required for the focal change (e.g., moving an allele from $p_0$ to $p^\star$ needs $L=\log\!\frac{p^\star/(1-p^\star)}{p_0/(1-p_0)}$; other trait metrics give similar log-scale budgets). With $S_n$ concentrating around $(1-\pi_{>})\bar s_{<}\,n$, a high-probability lower bound on the \emph{correction time} is
+
+$$
+T_{\mathrm{corr}}\;\gtrsim\;\frac{L}{(1-\pi_{>})\,\bar s_{<}}\;\times\;\Big(1+\text{small safety factor}\Big),
+$$
+
+matching the expression in the skeleton with $L=\log(\delta_0/\epsilon)$. This exposes two levers: reduce $\pi_{>}$ (fewer dead seasons) and increase $\bar s_{<}$ (more yield in usable seasons). Sex can do both if it lowers effective hazards at the relevant lag.
+
+\paragraph{A failure clock from demographic drift and bad runs.}
+Let $N_t$ be population size (or another persistence proxy) and $G_t=\log(N_{t+1}/N_t)$ the per-season log growth. When $\mathbb E[G_t]=g<0$ (subcritical drift), standard random-walk/branching approximations give a \emph{failure time} scaling
+
+\begin{align}
+T_{\mathrm{fail}} \;&\approx\; \frac{\log(K/N_0)}{|g|} && \text{(typical)},\\[3pt]
+\Pr\!\big(T_{\mathrm{fail}}>t\big) \;&\approx\; e^{-\theta_\star t} && \text{(light-tailed fluctuations)}.
+\end{align}
+
+where $K$ is an absorbing threshold (e.g., quasi-extinction) and $\theta_\star$ a Lundberg-type exponent. Lower hazards (and reduced synchrony) shift $g$ upward and lengthen $T_{\mathrm{fail}}$; conversely, long correlated bad runs (synchrony) shorten it. We only need the qualitative fact: hazard cuts buy time on the failure clock too.
+
+\paragraph{The decision rule: a race of clocks.}
+Persistence (or “rescue”) demands $T_{\mathrm{corr}}<T_{\mathrm{fail}}$. Plugging the mixture slope and failure scaling,
+
+$$
+\frac{L}{(1-\pi_{>})\,\bar s_{<}}\;<\;\frac{\log(K/N_0)}{|g|}.
+$$
+
+Sex affects the left side by \emph{expanding} the usable-seasons slope $(1-\pi_{>})\bar s_{<}$ (via hazard cuts at the trait’s lag), and the right side by \emph{pushing} $g$ upward (safer demography). Asex affects only the tempo (smaller $T$) but not hazards. This is the precise sense in which a slower sexual path can still win: if its hazard reduction enlarges the usable-seasons slope enough (and/or lengthens $T_{\mathrm{fail}}$) to beat the speed advantage of asex.
+
+\paragraph{Explanations by budgets rather than mechanisms.}
+ESH recasts “why sex wins” as an \emph{accounting} problem: selection pays for delayed benefits with a hazard-priced budget.
+That is a different explanatory mode from adding more mechanisms.
+Budgets unify heterogeneous causes (tempo, drift, variance, LD, synchrony) by pricing them in the same units; the result is an inequality, not a narrative.
+In this sense, the theory exemplifies \emph{constraint-based} explanation: once the budget is fixed, much of the outcome follows.
+
+\paragraph{Two clocks as causal architecture.}
+The correction–failure race is a structural claim about how causes compose: one process accumulates signal, the other eats time.
+This provides a template for “depth” in the Woodward sense: it identifies manipulable levers (hazard cuts, lag reduction) that shift which clock rings first.
+The virtue is portability: any system with a signal-accumulation process under attrition will admit a similar decomposition.
+
+\paragraph{Rate–function view of the two clocks.}
+Let $I_{\mathrm{sel}}$ and $I_{\mathrm{fail}}$ denote the large-deviation rates governing deviations of the
+usable-seasons average and of demographic drift. The correction time concentrates with rate $I_{\mathrm{sel}}$
+around $(1-\pi_{>})\bar s_{<}$, while failure times have an exponential tail with rate $\theta_\star$ (or a stretched-exp
+in rare-region regimes). Rescue is the comparison of these \emph{rates}: hazard cuts increase $I_{\mathrm{sel}}$
+(via the variance bonus in the block free energy) and decrease effective drift, pushing the system into the basin where
+the selection rate beats the failure rate—an Arrhenius-like picture for “crossing” the collapse barrier.
+
+\paragraph{Beyond a common currency.}
+The Effective Selection Horizon does more than put disparate quantities on the same scale.
+Because it is a Laplace tilt of the entire payoff profile, it \emph{permits} joint accounting of
+factors that are usually analyzed in isolation—tempo with hazard, variance with ordered lags,
+epistatic LD with finite horizons—\emph{under the same set of assumptions that support ESH}
+(stationary/mixing hazards, lag-matched blocks). In this sense ESH is a unifying formalism:
+it lets one combine, compare, and, in simple regimes (e.g.\ small control, weak selection),
+optimize tradeoffs that otherwise live in separate models.\footnote{We do not claim that ESH captures \emph{all} interactions in \emph{all}
+settings; heavy tails, strong nonstationarity, or tight feedbacks may require problem-specific analysis.
+Our claim is modest: under the same regularity conditions used throughout, ESH offers a consistent
+accounting in which several standard effects can be considered jointly.} Our examples illustrate feasibility
+of this joint accounting; they are not intended as an exhaustive treatment.
+
+\paragraph{Heavy tails.}
+Evolutionary systems are often challenged by heavy-tailed perturbations – rare but extreme events (e.g. severe climate shocks, “black swan” disasters) that have outsized effects. Unlike Gaussian noise, heavy-tailed distributions (such as power-law distributed event sizes or waiting times) imply that rare events dominate risk and variance \citep{Halley1996}. In population genetics, an analogy is found in skewed offspring distributions (“super-spreader” reproduction events): most generations contribute few descendants, but occasional individuals leave enormous numbers of offspring, violating typical assumptions and necessitating alternative coalescent models \citep{Eldon2006}. Such heavy-tailed dynamics mean that rare regions of parameter space (extreme events, exceptional individuals) disproportionately shape evolutionary trajectories, posing challenges for the applicability of ESH.
+
+\paragraph{Stat–mech lens on ESH.}
+Write $\widehat b(\Lambda)$ as a partition function with ``energy'' $\tau$ and inverse temperature $\beta=\Lambda$:
+$Z(\beta)=\int e^{-\beta \tau}b(\tau)\,d\tau$. Then the (dimensionless) free energy is
+$F(\beta)=-\log Z(\beta)$ and the standard identities give
+\[
+\frac{\partial F}{\partial \beta}=\mathbb E_\beta[\tau]=\mu_\Lambda,\qquad
+\frac{\partial^2 F}{\partial \beta^2}=\operatorname{Var}_\beta[\tau]\ge 0,
+\]
+where $\mathbb E_\beta$ denotes expectation under the $\beta$–tilted density $\propto e^{-\beta \tau}b(\tau)$.
+Thus the ESH “moves” exactly like a canonical ensemble: the hazard \(\Lambda\) plays the role of inverse temperature,
+the FK-tilted mean lag is the first derivative of free energy, and curvature is variance—explaining why variability
+shows up with the sign it does.
+
+\paragraph{Bridge to scale-matching and minimax.}
+Everything above uses a generic $\Lambda$ per block; Section~\ref{sec:block-hazard} replaces it with the \emph{lag-matched block hazard} $\hazT{T}$ that bakes in variance/skew (cumulant RG). In Section~\ref{sec:minimax} the environment pushes $\hazT{T}$ to its allowed worst case while sex allocates limited buffering $U$ to FK-sensitive phases. The two-clock inequality then becomes a \emph{minimax boundary}: sex wins whenever its hazard cut is large enough to shift $(1-\pi_{>})\bar s_{<}$ and $g$ so that the correction clock outruns the failure clock, even though $T_S>T_A$ on the underlying ordered landscape.
+
+\section{Scale-matching via RG: block hazard at the trait's lag}
+\label{sec:block-hazard}
+
+\paragraph{Why renormalization?}
+Selection only “sees” benefits at the delay they arrive.  
+Renormalization group (RG) methods are often associated with physics, but the
+core idea is simple: instead of analyzing hazards season by season, we
+\emph{coarse-grain} them to the time scale that matters for the trait’s payoff
+lag $T$. The block hazard
+\[
+\hazT{T}=-\tfrac{1}{T}\log \,\E\!\left[\exp\!\Big(-\sum_{t=1}^T \Lambda_t\Big)\right]
+\]
+is exactly the Feynman--Kac killing rate seen by a payoff arriving after $T$
+steps. This coarse-graining has two analytical benefits. First, it gives a
+closed form for the effective hazard that automatically accounts for variance,
+skew, and correlations across the block, rather than forcing us to treat them
+perturbatively season by season. Second, it identifies which statistics
+survive after rescaling: variance lowers $\hazT{T}$ (Jensen’s inequality),
+positive skew raises it, and synchrony across time or space increases the
+frequency of long beyond-horizon runs. In other words, RG tells us which
+features of hazard fluctuations are \emph{relevant} once we match scales to the
+trait’s lag. This makes the analysis both sharper (by replacing raw per-season
+hazards with the lag-matched $\hazT{T}$) and cleaner (by separating mean,
+variance, skew, and correlation effects in a principled way).
+
+\paragraph{Perspective.}
+Coarse-graining is the art of simplifying by forgetting the right things.
+At the trait’s lag, the environment retains only a few leading statistics: mean, variance, skew, correlation.
+These structurally dominate, with higher cumulants contributing smaller corrections unless hazards are heavy-tailed.
+RG does not add complexity; it removes inessential detail until the remaining structure becomes legible.
+It is an instance of Batterman-style “asymptotic explanation”: the right limit exposes invariants that do explanatory work.
+
+\paragraph{Regularity for validity (heavy tails and mixing).}
+Two levels of conditions matter:
+
+\emph{(H0) Laplace existence (always).} For nonnegative hazards, \(\E[e^{-S_T}]\in(0,1]\) is finite, so \(\hazT{T}=-\tfrac{1}{T}\log\E[e^{-S_T}]\) is \emph{always} well defined—even under heavy-tailed increments.
+
+\emph{(H1) Differentiability at \(\theta=-1\) (for cumulant/GE use).} The cumulant expansion and Gärtner–Ellis limit at \(\theta=-1\) require that the block log-mgf \(\phi_T(\theta)=\tfrac{1}{T}\log\E[e^{\theta S_T}]\) has derivatives at \(-1\). A sufficient condition is
+\[
+\E\!\big[S_T^k e^{-S_T}\big]<\infty\ \text{for }k\le 3\quad\text{and}\quad \phi_T(\theta)\to\phi(\theta)\ \text{with }\phi'\ \text{continuous at }-1,
+\]
+which holds, for example, under weak dependence (e.g., summable \(\alpha\)-mixing) and tails dominated by \(e^{(1-\varepsilon) s}\) for some \(\varepsilon>0\). When (H1) fails (e.g., extremely heavy tails or non-mixing), we \emph{do not} use the series: we estimate \(\hazT{T}\) directly via the block estimator and fall back to Jensen’s bound \(\hazT{T}\le \mu_T\).
+
+\emph{(H2) Practical recipe under heavy tails.} Use the nonparametric \(\widehat{\hazT{T}}\) with block bootstrap CIs; report \(\widehat{\pi}_{>}\) empirically; treat right-tail episodes as increasing \(\kappa_{3,T}\) and \(\pi_{>}\), which tightens the robust boundary but does not invalidate it.
+
+\paragraph{Block free energy and RG.}
+Define the block log-mgf density $\phi_T(\theta)=\tfrac1T \log \mathbb E\!\big[e^{\theta S_T}\big]$ for $S_T=\sum_{t=1}^T\Lambda_t$.
+Our effective hazard is a free-energy density at $\theta\!=\!-1$: $\hazT{T}=-\phi_T(-1)$.
+Under standard mixing, $\phi_T(\theta)\to\phi(\theta)$ (Gärtner–Ellis), so $\hazT{T}$ is well defined at large $T$ and admits a
+cumulant expansion $\phi(\theta)=\mu\theta+\tfrac12\sigma^2\theta^2+\tfrac16\kappa_3\theta^3+\cdots$.
+RG here is simply the statement that, after coarse-graining to the payoff lag, only the derivatives of $\phi$ at $\theta=-1$
+remain as \emph{relevant} statistics for selection.
+
+\paragraph{Worked example (two-season block with bursts).}
+Consider a toy process with two seasonal hazard levels:
+a benign season with rate $\lambda_{\mathrm{lo}}$ and a harsh season with rate $\lambda_{\mathrm{hi}}>\lambda_{\mathrm{lo}}$.
+Within any two-season block, hazards are i.i.d.\ draws with probabilities
+$\Pr(\lambda_{\mathrm{lo}})=1-\alpha$ and $\Pr(\lambda_{\mathrm{hi}})=\alpha$.
+Let $T=2$ be the focal trait’s payoff lag. The \emph{block hazard} seen by a payoff that arrives after two seasons is
+\[
+\Lambda^{(2)}
+= -\tfrac{1}{2}\log \,\E\!\left[e^{-(\Lambda_1+\Lambda_2)}\right]
+= -\tfrac{1}{2}\log\!\Big( \big[(1-\alpha)e^{-\lambda_{\mathrm{lo}}}+\alpha e^{-\lambda_{\mathrm{hi}}}\big]^2 \Big)
+= -\log\!\big((1-\alpha)e^{-\lambda_{\mathrm{lo}}}+\alpha e^{-\lambda_{\mathrm{hi}}}\big).
+\]
+By Jensen’s inequality ($-\log$ is convex), the \emph{variance bonus} appears immediately:
+\[
+\Lambda^{(2)} \;=\; -\log\,\E\!\big[e^{-\Lambda}\big]
+\;\le\; -\log\!\big(e^{-\E[\Lambda]}\big) \;=\; \E[\Lambda]
+\;=\; (1-\alpha)\lambda_{\mathrm{lo}}+\alpha\lambda_{\mathrm{hi}}.
+\]
+Thus coarse-graining at the payoff lag automatically delivers an effective hazard \emph{no larger than the mean hazard}—favorable bursts help selection even if the average environment is harsh.
+
+\medskip
+\noindent\textit{Numerical illustration.}
+Take $\lambda_{\mathrm{lo}}=0.05$, $\lambda_{\mathrm{hi}}=0.70$, $\alpha=0.2$.
+Then $\E[\Lambda]=0.05\cdot 0.8+0.70\cdot 0.2=0.18$,
+while
+\[
+\Lambda^{(2)} = -\log\!\big(0.8\,e^{-0.05}+0.2\,e^{-0.70}\big)
+= -\log(0.8603) \approx 0.1502 \;<\; 0.18.
+\]
+A trait with a two-season lag therefore experiences \emph{less} discounting than the mean hazard suggests.
+
+\medskip
+\noindent\textit{Effect of serial correlation.}
+Let hazards alternate deterministically (one benign, one harsh), so $\Lambda_1+\Lambda_2=\lambda_{\mathrm{lo}}+\lambda_{\mathrm{hi}}$ in every block.
+Then
+\[
+\Lambda^{(2)}_{\mathrm{alt}}
+\;=\; -\tfrac{1}{2}\log\!\big(e^{-(\lambda_{\mathrm{lo}}+\lambda_{\mathrm{hi}})}\big)
+\;=\; \tfrac{1}{2}\,(\lambda_{\mathrm{lo}}+\lambda_{\mathrm{hi}}),
+\]
+which coincides with the mean per-season hazard in the block.
+
+By contrast, under \emph{perfect clustering} (both seasons benign with prob.\ $1-\alpha$,
+both harsh with prob.\ $\alpha$),
+\[
+\Lambda^{(2)}_{\mathrm{cluster}}
+\;=\; -\tfrac{1}{2}\log\!\Big((1-\alpha)e^{-2\lambda_{\mathrm{lo}}}+\alpha e^{-2\lambda_{\mathrm{hi}}}\Big).
+\]
+Since $\E[e^{-2X}]\ge (\E[e^{-X}])^2$ for non–degenerate $X$, it follows that
+$\Lambda^{(2)}_{\mathrm{cluster}}\le \Lambda^{(2)}_{\mathrm{iid}}$,
+with strict inequality unless $\lambda_{\mathrm{lo}}=\lambda_{\mathrm{hi}}$.
+Intuitively: clustering puts both seasons at the same extreme, increasing within–block variance,
+which raises $\E[e^{-(\Lambda_1+\Lambda_2)}]$ and thereby lowers the effective block hazard.
+
+\medskip
+\noindent\textit{Interpretation.}
+Correlation structure matters: alternation yields the arithmetic mean hazard,
+clustering lowers the block hazard relative to i.i.d., and only in the i.i.d.\ case
+does the variance bonus reduce neatly to $-\log\E[e^{-\Lambda}]$.
+Temporal order within a block still does not matter for a given sum, but
+\emph{correlation across blocks} changes the distribution of sums and hence $\Lambda^{(2)}$.
+
+\medskip
+\noindent\textit{Takeaway.}
+Coarse-graining to $\hazT{T}$ captures, in one number: (i) the mean hazard, (ii) the variance bonus via $-\log \E[e^{-\Lambda}]$, and (iii) insensitivity to within-block order (only totals matter for FK).
+Temporal structure still matters through the \emph{clock channel}: correlation that creates \emph{long} high-hazard runs increases the beyond-horizon share $\pi_{>}$ and shortens persistence, even if $\hazT{T}$ is unchanged.
+
+\paragraph{Cumulant RG: mean–variance–skew at lag $T$.}
+Let $S_T=\sum_{t=1}^T \Lambda_t$ and $K_{S_T}(\theta)=\log \mathbb{E}[e^{\theta S_T}]$ be its cumulant generating function. Then
+
+$$
+\hazT{T} \;=\; -\frac{1}{T}K_{S_T}(-1)
+\;=\;\underbrace{\mu_T}_{\text{mean}} \;-\;\frac{1}{2}\underbrace{\sigma_T^2}_{\text{variance}}\;+\;\frac{1}{6}\underbrace{\kappa_{3,T}}_{\text{third cumulant}}\;-\;\cdots,
+$$
+
+where $\mu_T=\frac{1}{T}\mathbb{E}[S_T]$, $\sigma_T^2=\frac{1}{T}\operatorname{Var}(S_T)$, and $\kappa_{3,T}=\frac{1}{T}$ (third cumulant of $S_T$). For weak dependence,
+
+$$
+\sigma_T^2 \;=\; \gamma_0 \;+\; 2\sum_{k=1}^{T-1}\Big(1-\frac{k}{T}\Big)\gamma_k,
+$$
+
+with $\gamma_k=\operatorname{Cov}(\Lambda_t,\Lambda_{t+k})$ the temporal autocovariances. Two robust signs follow:
+
+\begin{itemize}
+\item[$\square$] \emph{Variance bonus (helpful):} the $-\frac{1}{2}\sigma_T^2$ term \emph{lowers} $\hazT{T}$ (Jensen), expanding the usable horizon for selection at lag $T$.
+\item[$\square$] \emph{Positive skew (harmful):}  $\frac{1}{6}\kappa_{3,T}>0$ \emph{raises} $\hazT{T}$, shrinking the horizon; right-tailed hazard spikes hurt realized selection.
+\end{itemize}
+
+These are \emph{lag-matched}: what matters is variance and skew \emph{within} the $T$-window, not per-season in isolation.
+
+\paragraph{Bridge to Jensen.}
+In stochastic demography, Jensen’s inequality implies that fluctuating environments depress long-run growth relative to a constant environment with the same mean – selection actually maximizes geometric mean fitness. Analytical approaches like cumulant expansions (expanding growth rate in terms of environmental variance, skew, etc.) formalize this idea, showing how higher moments of environmental variation contribute to deviations between arithmetic and geometric fitness measures \citep{Lewontin1969, Tuljapurkar1982}.
+
+\paragraph{Autocorrelation and rare runs: two channels.}
+Positive temporal autocorrelation inflates $\sigma_T^2$, strengthening the variance bonus in $\hazT{T}$ (helpful for realized selection weights). However, the same autocorrelation also increases the chance of long high-hazard runs, which raises the beyond-horizon fraction $\pi_{>}$ and shortens persistence (harmful in the \emph{failure-clock} channel from Section~\ref{sec:esh}). The net--net: temporal structure has split effects—variance within blocks helps the ESH weight; long bad runs hurt via $\pi_>$ and failure time. Our phase boundary will account for both.
+
+\paragraph{Bridge to Moran.}
+Moran’s theorem showed that spatially separated populations subject to correlated environmental stochasticity will fluctuate in synchrony \citep{Moran1953}, which increases the risk of simultaneous crashes. Moreover, environments with strong temporal autocorrelation (“red” noise) can produce long runs of bad years; such persistent adverse stretches have heavy-tailed length distributions that markedly raise extinction risk compared to uncorrelated fluctuations \citep{Ripa1996}.
+
+\paragraph{Spatial RG and synchrony.}
+Coarse-graining patches into “super-patches” of linear size $\ell$ yields spatial block hazards $\Lambda^{(T,\ell)}$. Increasing $\ell$ typically amplifies shock synchrony (Moran effect). Synchrony weakens metapopulation rescue, inflates $\pi_{>}$ at regional scale, and steepens failure risks (Griffiths-type rare-region effects when bad patches cluster). Thus, while temporal variance can lower $\hazT{T}$, \emph{spatial} synchrony generally shifts the overall tradeoff against sex unless buffering also disrupts synchrony or targets the worst phases/places.
+
+\paragraph{Spatial synchrony and dispersal.}
+Let there be $P$ patches with same-time hazard vector $(\Lambda_t^{(1)},\dots,\Lambda_t^{(P)})$,
+common mean $\mu$, per-patch variance $\sigma_\Lambda^2$, and pairwise correlation $\rho$ (Moran
+synchrony). The regional mean hazard $\bar\Lambda_t:=\tfrac{1}{P}\sum_i \Lambda_t^{(i)}$ has
+\[
+\Var(\bar\Lambda_t)\;=\;\sigma_\Lambda^2\Big(\rho+\frac{1-\rho}{P}\Big),
+\]
+so increasing synchrony raises the variance of the \emph{regional} exposure even as $P$ grows. In a
+block of length $T$, the beyond-horizon probability for the region obeys a large-deviation form
+\[
+\pi_{>}^{\mathrm{reg}} \;=\; \Pr\!\big(\bar\Lambda_T\ge \Lambda_c\big)\ \approx\ e^{-\,T\,I_\rho(\Lambda_c)},
+\]
+with rate $I_\rho(\Lambda_c)$ \emph{decreasing} in $\rho$ (heavier synchrony $\Rightarrow$ more mass
+beyond the horizon). Dispersal or any mechanism that reduces effective synchrony ($\rho'\!<\rho$)
+therefore increases $I_\rho$ and shrinks $\pi_{>}^{\mathrm{reg}}$ \emph{exponentially} in $T$ (and in $P$
+when patches are weakly correlated). Intuitively: while temporal variance can lower the block free
+energy within a patch (ESH bonus), spatial synchrony harms the \emph{clock} channel by making
+simultaneous bad runs more likely; modest dispersal that breaks synchrony is thus disproportionately
+valuable.
+
+\paragraph{Heavy tails and long memory.}
+If hazard increments have heavy tails or long memory, the cumulant series is an asymptotic device but two inequalities remain safe: (i) $\hazT{T}\le \mu_T$ (Jensen) so variance never makes things worse for ESH; (ii) right-tail thickening (subexponential spikes) effectively adds positive $\kappa_{3,T}$ and increases the frequency of beyond-horizon blocks, both pushing against sex \emph{unless} buffering truncates those spikes.
+
+\paragraph{Large-deviation theory.}
+Large-deviation theory provides tools to characterize the tail of the distribution of extinction times (or other rare events), beyond mean-time approximations. These methods reveal, for instance, the exponentially small probabilities of extremely long persistence (the heavy tail of “failure times”) and identify the most likely paths to extinction (the optimal path in the space of population trajectories) \citep{Ovaskainen2010}. Recent work computes full extinction-time distributions for various models, confirming heavy tails and non-standard kinetics in the far-right tail \citep{Kessler2023}.
+
+\paragraph{What sex can change at lag $T$.}
+Within this RG view, sexual mechanisms that (i) lower the lag-matched mean $\mu_T$ (e.g., pre-fusion buffering, pair-finding insurance), (ii) \emph{remove right-tail spikes} (reduce $\kappa_{3,T}$), or (iii) re-time exposure so variance is expressed through additional \emph{benign} dips rather than catastrophic peaks (maintain or slightly increase $\sigma_T^2$ while cutting $\kappa_{3,T}$) will \emph{lower} $\hazT{T}$ and reduce $\pi_{>}$ simultaneously. Naïve “smoothing” that simply kills variance can be counterproductive for ESH; what matters is \emph{where} variance sits in the distribution: trimming extremes while preserving benign variability is ideal.
+
+\paragraph{Data-facing uncertainty set.}
+For the minimax game we model the environment via a compact uncertainty set
+
+$$
+\mathcal H(T)\;=\;\Big\{(\mu_T,\sigma_T^2,\kappa_{3,T},\{\gamma_k\},\text{tail class})\ \text{satisfying empirical bounds}\Big\},
+$$
+
+and map each element to $\hazT{T}$ through the log-mgf. The “worst” hazard for realized selection at fixed $\mu_T$ is one that \emph{minimizes} $\sigma_T^2$ and \emph{maximizes} $\kappa_{3,T}$ (kills the variance bonus, adds right skew), subject to the empirical constraints—this defines $\hazT{T}_{\max}$ used in the robust inequality later.
+
+\paragraph{Estimation in practice (brief).}
+Given seasonal series $\{\Lambda_t\}$, estimate $\hazT{T}$ with
+
+$$
+\widehat{\Lambda}^{(T)}\;=\;-\frac{1}{T}\log\Big(\frac{1}{M}\sum_{m=1}^{M} e^{-S_T^{(m)}}\Big),
+$$
+
+using overlapping blocks $S_T^{(m)}$ and bias-correcting via the delta method; compute $\hat\mu_T,\hat\sigma_T^2$ from block sums and $\hat\kappa_{3,T}$ via standardized third cumulants, with CIs from block bootstrap. Estimating $\pi_{>}$ requires the horizon boundary $\Lambda_c$ from Section~\ref{sec:esh}; report both $\widehat{\Lambda}^{(T)}$ and the share of blocks exceeding $\Lambda_c$.
+
+\paragraph{Methods.}
+Quantitative evolutionary analyses often rely on resampling and asymptotic approximations to assess uncertainty and correct bias. The bootstrap provides a flexible, computer-intensive method to estimate standard errors and biases by resampling the data itself \citep{Efron1979}. In parallel, the delta method uses Taylor series expansions to propagate error and approximate bias for functions of estimated parameters (e.g. the logarithm of fitness or selection coefficients), offering analytical bias correction and confidence interval approximations \citep{Casella2002}.
+
+\paragraph{Scope (domain restriction).}
+Aggregation is performed only after coarse-graining to the trait’s lag $T$, i.e.\ over the
+block free energy $\hazT{T}$ and its cumulants. This restricted domain is what makes a
+single cardinal accounting consistent; without lag-matching, an “all-scales” aggregator would
+inherit Arrow-type conflicts among phases.
+
+\paragraph{Bridge to minimax.}
+Replacing $\Lambda$ by $\hazT{T}$ in the ESH immediately propagates into the seasonal-mixture slope and the correction clock. In Section~\ref{sec:minimax} the \emph{environment} chooses, within $\mathcal H(T)$, statistics that drive $\hazT{T}$ toward $\hazT{T}_{\max}$ and inflate $\pi_{>}$, while \emph{sex} spends a limited budget $U$ to reduce $\mu_T$ and truncate right-tail spikes (lower $\kappa_{3,T}$). This scale-matched accounting is what makes the upcoming \emph{minimax boundary}  meaningful at the trait’s lag, rather than per season.
+
+\section{Minimax formulation: environment versus insurance}
+\label{sec:minimax}
+
+\paragraph{Why minimax instead of an average-case?}
+The minimax form is a robust surrogate for uncertainty in hazard statistics. Under convexity, the inner infimum is achieved at the edge $\hazmaxT{T}$, so the sufficient condition reduces to a transparent worst-case comparison \eqref{eq:robust-base}. Average-case variants are recovered by replacing $\hazmaxT{T}$ with an empirical $\widehat{\Lambda}^{(T)}$ (or a risk-sensitive entropic transform), but the minimax form guarantees correctness even when variance/skew/synchrony push the environment unfavorably.
+
+\paragraph{Players, payoff, and scale.}
+At the trait’s lag $T$ (Section~\ref{sec:block-hazard}), the environment chooses a block hazard from an admissible uncertainty set $\mathcal H(T)$; the lineage (sex) chooses where to spend a limited \emph{buffering} budget to reduce that block hazard at cost. The object of interest is the worst-case \emph{realized selection advantage of sex over asex} in a single $T$-block, which—by Section~\ref{sec:esh}’s accounting—reads
+
+\begin{equation}\label{eq:minimax}
+\mathcal V =
+\sup_{\mathbf u\in \mathcal U}\;
+\inf_{\hazT{T}\in \mathcal H(T)}
+\Big\{\,B\!\left(e^{-(\hazT{T}-U(\mathbf u))\,T_S}-e^{-\hazT{T}\,T_A}\right)-\Delta c(\mathbf u)\Big\}.
+\end{equation}
+
+Here $T_S>T_A$ is the K\&K slowdown, $U(\mathbf u)\ge 0$ is the effective hazard cut produced by control vector $\mathbf u$, and $\Delta c(\mathbf u)$ is its cost.
+
+\paragraph{Control channels (what sex can move).}
+We model two natural channels, used separately or together:
+\begin{enumerate}[label=(C\arabic*)]
+\item[$\square$] \emph{Additive, phase-targeted cuts.} Partition the $T$-block into subphases (or hazard quantiles) indexed by $i$. A unit of control $u_i$ targeted to phase $i$ reduces the block hazard by $w_i u_i$, where $w_i\ge 0$ are FK weights (larger in high-hazard/high-importance phases). Thus
+$U(\mathbf u)=\sum_i w_i u_i$, with budget $\mathbf u\in\mathcal U=\{\mathbf u\ge 0:\sum_i u_i\le U_{\max}\}$.
+\item[$\square$] \emph{Fractional (multiplicative) smoothing.} A scalar $u\in[0,u_{\max})$ rescales hazards $\hazT{T}\mapsto (1-u)\hazT{T}$ (e.g., uniform buffering of encounter failure). We keep both forms to connect to the closed-form boundary in Section~\ref{sec:phase}.
+\end{enumerate}
+Costs are convex; two standard choices suffice for analysis and numerics: $\Delta c(\mathbf u)=c_U\sum_i u_i$ (linear) or $\Delta c(\mathbf u)=\frac{\rho}{2}\|\mathbf u\|_2^2$ (quadratic).
+
+\paragraph{Uncertainty set (what the environment can push).}
+The environment’s admissible hazards are summarized at lag $T$ by the block-RG statistics (Section~\ref{sec:block-hazard}):
+
+\[
+\mathcal H(T)
+:= \Big\{\,(\mu_T,\sigma_T^2,\kappa_{3,T},\{\gamma_k\}_{k\ge 1},\text{tail}) \;:\;
+\text{s.t. empirical bounds/constraints}\,\Big\}.
+\]
+\[
+(\mu_T,\sigma_T^2,\kappa_{3,T},\{\gamma_k\},\text{tail})
+\;\longmapsto\;
+\hazT{T} \;=\; -\,\frac{1}{T}\,K_{S_T}(-1),
+\qquad
+S_T:=\sum_{t=1}^{T}\Lambda_t,\;\; K_{S_T}(\theta):=\log \E\!\big[e^{\theta S_T}\big].
+\]
+
+Within $\mathcal H(T)$, the worst case for realized selection at fixed mean is to \emph{minimize} variance and \emph{maximize} right skew/synchrony, i.e., drive $\hazT{T}$ up toward
+
+$$
+\Lambda_{\max}^{(T)}:=\sup_{\hazT{T}\in\mathcal H(T)}\hazT{T}.
+$$
+
+This is the adversary’s move in \eqref{eq:minimax}. (Effects on the failure clock and $\pi_{>}$ are accounted for in Section~\ref{sec:phase}; here we pin down the per-block realized selection.)
+
+\paragraph{Saddle existence in the small-control regime.}
+Linearize the sexual term for small control $U$:
+
+$$
+e^{-(\hazT{T}-U)\,T_S}\;=\;e^{-\hazT{T}T_S}\big(1+U T_S + O(U^2)\big).
+$$
+
+With $U(\mathbf u)$ linear and $\Delta c(\mathbf u)$ convex, the inner objective is \emph{concave} in $\mathbf u$ (linear gain minus convex cost) and \emph{convex} in $\hazT{T}$ (because $e^{-\hazT{T} T}$ is convex decreasing). Under compact convex $\mathcal U,\mathcal H(T)$, Sion’s minimax theorem yields a \emph{saddle} and the order of $\sup$ and $\inf$ may be exchanged. This legitimizes viewing evolutionary/ecological adjustments as best-response dynamics that converge to a saddle.
+
+\paragraph{First-order leverage and optimal targeting.}
+The gradient of the value with respect to an additive cut at $U=0$ is
+
+$$
+\frac{\partial \mathcal V}{\partial U}\Big|_{U=0}
+\;=\; B\,T_S\,e^{-\hazT{T}T_S}.
+$$
+
+Thus each unit of hazard reduction buys $B T_S e^{-\hazT{T}T_S}$ units of realized selection \emph{at that block}. With phase-targeted controls, the linearized gain is $\sum_i w_i u_i\cdot B T_S e^{-\hazT{T}T_S}$, so the optimal small-budget allocation is “bang-bang”: spend entirely on phases with largest FK weights $w_i$ (i.e., phases contributing most to $\hazT{T}$; in continuous time, where the FK right eigenfunction $\varphi$ is available, the weight is proportional to $\varphi^2$). This formalizes the intuition to “cut the worst spikes first.”
+
+\paragraph{Robust objective at the adversary’s edge.}
+Because the adversary increases $\hazT{T}$ and kills variance benefits, a conservative sufficient condition for sex to win is to evaluate the linearized game at $\hazT{T}=\Lambda_{\max}^{(T_S)}$ and ask whether the best control beats costs:
+
+$$
+B\,\big(e^{-(\Lambda_{\max}^{(T_S)}-U)T_S}-e^{-\Lambda_{\max}^{(T_S)}T_A}\big)\;-\;\Delta c \;>\;0.
+$$
+
+For additive control with total cut $U\le U_{\max}$, the small-$U$ expansion gives a transparent comparison of “areas”: the hazard-relief area $U T_S$ must exceed the slowdown area $\Lambda_{\max}^{(T_S)}(T_S-T_A)$, up to the cost term. For fractional control $u$, replace $U$ by $u\,\Lambda_{\max}^{(T_S)}$.
+
+\paragraph{What this buys for the phase boundary.}
+The structure above yields, in Section~\ref{sec:saddle}, a \emph{robust sex-wins inequality} by solving the conservative condition at $\Lambda_{\max}^{(T_S)}$. Costs/drift enter additively on the right-hand side; variance/skew/synchrony corrections shift $\Lambda_{\max}^{(T_S)}$ (Section~\ref{sec:phase}), moving the boundary left or right. The resulting inequality is the minimax analogue of the simpler $u>1-1/r$ rule and will serve as the backbone for the phase diagram.
+
+
+\section{Saddle-point boundary: a robust sex-wins inequality}
+\label{sec:saddle}
+
+\paragraph{Robust comparison at the adversary’s edge.}
+From \eqref{eq:minimax}, a conservative sufficient condition for sex to win is to evaluate against the worst admissible lag-scale hazard $\Lmax:=\sup_{\hazT{T}\in\Hset}\hazT{T}$ and ask whether the sexual path beats the asexual path in a single $T_S$-block:
+\begin{equation}
+\label{eq:robust-base}
+B\left(e^{-(\Lmax-U)T_S}-e^{-\Lmax T_A}\right)>\Delta c.
+\end{equation}
+Inequality \eqref{eq:robust-base} is exact for a block with additive cut $U$ and covers the small-control saddle analysis (Section~\ref{sec:minimax}) as a special case.
+
+\noindent\emph{Conservatism in $\hazT{T}$.}
+We evaluate both $e^{-(\cdot)T_S}$ and $e^{-(\cdot)T_A}$ at $\Lambda^{(T_S)}_{\max}$.
+Under weak dependence with positive autocorrelation, $\hazT{T}$ is non-increasing in $T$ to first order
+(variance per unit time grows with $T$), so
+$e^{-\Lambda^{(T_S)}_{\max} T_A}\ge e^{-\Lambda^{(T_A)}_{\max} T_A}$.
+This makes the comparison harder for sex and yields a clean, conservative sufficient condition.
+
+\paragraph{Additive (phase-targeted) buffering.}
+Solving \eqref{eq:robust-base} for the \emph{total} admissible cut $U$ yields the \emph{robust sex-wins threshold}
+\begin{equation}
+\label{eq:robust-U}
+\boxed{
+U_\star = \frac{\Lmax\,(T_S-T_A)}{T_S}
++ \frac{1}{T_S}\,\log\!\Big(1+\frac{\Delta c}{B}\,e^{\Lmax T_A}\Big)
+}\qquad\text{(sex wins if $U>U_\star$).}
+\end{equation}
+Interpretation: the first term is the “slowdown area” $\Lmax\,(T_S-T_A)$ spread over the sexual lag $T_S$; the second term is the cost surcharge scaled by $1/T_S$ and inflated when the adversary can push $\Lmax$ and/or $T_A$ high. The boundary is \emph{monotone}: it increases in $r=T_S/T_A$, in $\Lmax$, in $\Delta c$, and decreases in $B$.
+
+\paragraph{Robust $\Leftrightarrow$ risk-sensitive duality.}
+For any random variable $X$ and reference law $P$,
+\begin{equation}\label{eq:entropic-dual}
+\sup_{Q:\,D_{\mathrm{KL}}(Q\Vert P)\le \rho}\ \E_Q[X]
+\;=\;
+\inf_{\eta>0}\ \frac{\rho}{\eta}\;+\;\frac{1}{\eta}\log \E_P\!\big[e^{\eta X}\big].
+\end{equation}
+Thus minimax over a KL-uncertainty set is equivalent to an \emph{entropic risk-sensitive} objective (free energy).
+We use this equivalence implicitly when passing between robust hazards (min over $\Hset$) and exponential tilts.
+
+\paragraph{Feasibility and the benign limit.}
+Physical feasibility imposes $0\le U\le U_{\max}$ and typically $U\le \Lmax$ (you cannot “cut” more hazard than is present). If $U_{\max}<U_\star$ or $U_\star>\Lmax$, the robust condition cannot be met—collapsing the decision to the K\&K tempo logic in benign regimes. Indeed, as $\Lmax\downarrow 0$, \eqref{eq:robust-U} reduces to $U_\star\to (1/T_S)\log(1+\Delta c/B)$; with vanishing hazards, any buffering is moot and sex loses unless costs are essentially zero.
+
+\paragraph{Fractional (multiplicative) buffering.}
+If buffering reduces the block hazard multiplicatively, $\hazT{T}\mapsto(1-u)\hazT{T}$ with $u\in[0,u_{\max})$, the robust condition $B(e^{-(1-u)\Lmax T_S}-e^{-\Lmax T_A})>\Delta c$ gives
+\begin{equation}
+\label{eq:robust-u}
+\boxed{
+u_\star = 1-\frac{T_A}{T_S} + \frac{1}{\Lmax T_S}\,\log\!\Big(1+\frac{\Delta c}{B}\,e^{\Lmax T_A}\Big)
+= 1-\frac{1}{r} + \frac{1}{\Lmax T_S}\,\log\!\Big(1+\frac{\Delta c}{B}\,e^{\Lmax T_A}\Big)
+}
+\end{equation}
+With zero control cost ($\Delta c=0$), this collapses to the clean, dimensionless boundary $u>1-1/r$. Small costs add a $O(\Delta c)$ rightward shift scaled by $1/(\Lmax T_S)$.
+
+\paragraph{Fluctuation–response identity (sensitivity).}
+From the partition-function view, the log sensitivity of realized benefit to hazard is
+\[
+\frac{\partial}{\partial \Lambda}\log \widehat b(\Lambda) = -\,\mu_\Lambda, \qquad
+\frac{\partial^2}{\partial \Lambda^2}\log \widehat b(\Lambda)= \operatorname{Var}_\Lambda[\tau].
+\]
+Hence a small hazard cut $U$ at lag $T$ produces a multiplicative gain $\approx \exp\{U\,\mu_\Lambda\}$ to first order,
+with curvature set by the tilted variance. On single-lag profiles $\mu_\Lambda\!\approx\!T$, recovering the simple factor
+$e^{U T}$ used in the boundary and clarifying why variance modulates the slope of the phase line.
+
+\paragraph{Knife-edge and comparative statics.}
+Equality in \eqref{eq:robust-U} or \eqref{eq:robust-u} defines a \emph{saddle}: the adversary sits at ${\Lmax}$, sex at the minimally sufficient buffering. With $T_S$ fixed and $r:=T_S/T_A$ (so $T_A=T_S/r$), the derivatives of $U_\star(\Lmax)$ are
+\begin{align}
+\frac{\partial U_\star}{\partial r}
+&= \frac{{\Lmax}}{r^{2}}\,
+   \frac{1}{1+\frac{\Delta c}{B}e^{{\Lmax} T_A}}
+   \;>\;0,\\[4pt]
+\frac{\partial U_\star}{\partial {\Lmax}}
+&= \frac{T_S-T_A}{T_S}
+   \;+\; \frac{T_A}{T_S}\,
+        \frac{\frac{\Delta c}{B}e^{{\Lmax} T_A}}
+             {1+\frac{\Delta c}{B}e^{{\Lmax} T_A}}
+   \;>\;0,\\[4pt]
+\frac{\partial U_\star}{\partial \Delta c}
+&= \frac{1}{T_S B}\,
+   \frac{e^{{\Lmax} T_A}}
+        {1+\frac{\Delta c}{B}e^{{\Lmax} T_A}}
+   \;>\;0,\\[4pt]
+\frac{\partial U_\star}{\partial B}
+&= -\,\frac{\Delta c}{T_S B^{2}}\,
+     \frac{e^{{\Lmax} T_A}}
+          {1+\frac{\Delta c}{B}e^{{\Lmax} T_A}}
+   \;<\;0.
+\end{align}
+In particular, in the costless case $\Delta c=0$ we recover $\partial U_\star/\partial r = {\Lmax}/r^{2}$. Thus harsher adversarial regimes (${\Lmax}\!\uparrow$), larger slowdowns ($r\!\uparrow$), or higher costs ($\Delta c\!\uparrow$) \emph{tighten} the condition; larger eventual benefit $B$ \emph{loosens} it.
+
+\paragraph{RG corrections enter through $\Lmax$.}
+Section~\ref{sec:block-hazard} implies $\Lmax$ increases when the adversary suppresses variance and adds right-skew or synchrony; conversely, empirically demonstrable variance (within the $T$-window) and anti-synchrony \emph{lower} $\Lmax$. Hence RG structure moves the same boundary \eqref{eq:robust-U}–\eqref{eq:robust-u} left or right in the phase diagram, without changing its form.
+
+\paragraph{Small-control expansion (consistency with the saddle analysis).}
+For additive buffering with small feasible $U$, the linearization of \eqref{eq:robust-base} around $U=0$ gives
+
+$$
+B\,T_S\,e^{-\Lmax T_S}\,U \;>\; B\!\left(e^{-\Lmax T_A}-e^{-\Lmax T_S}\right)+\Delta c,
+$$
+
+i.e.,
+
+\[
+\begin{aligned}
+U \;>\;&
+  \frac{e^{-\Lmax T_A}-e^{-\Lmax T_S}}{T_S\,e^{-\Lmax T_S}}
+  \;+\; \frac{\Delta c}{B\,T_S\,e^{-\Lmax T_S}}
+\\[2pt]
+=\;&
+  \frac{\Lmax\,(T_S-T_A)}{T_S}
+  \;+\; \frac{1}{T_S}\,\frac{\Delta c}{B}\,e^{\Lmax T_A}
+  \;+\; O\!\big((\Lmax)^{2}\big).
+\end{aligned}
+\]
+
+
+which matches the exact threshold \eqref{eq:robust-U} to first order (using $e^{\Lmax T_A}=1+O(\Lmax)$), confirming consistency with the saddle-point (Sion) analysis.
+
+\paragraph{Bridge to the phase diagram.}
+Define the dimensionless axes $r=T_S/T_A$ and $u=U/\Lmax$ (or the direct fractional control $u$). Then \eqref{eq:robust-u} reads
+
+$$
+u \;>\; \underbrace{1-\frac{1}{r}}_{\text{tempo penalty}} \;+\; \underbrace{\frac{1}{\Lmax T_S}\log\!\Big(1+\frac{\Delta c}{B}\,e^{\Lmax T_A}\Big)}_{\text{cost/drift surcharge}},
+$$
+
+with RG shifting the whole boundary through $\Lmax$. Section~\ref{sec:phase} plots this as a \emph{phase diagram} and overlays the predicted left/right moves under variance, skew, synchrony, costs, and drift, completing the minimax picture.
+
+
+\section{Phase diagram and RG corrections}
+\label{sec:phase}
+
+\paragraph{Axes and baseline boundary.}
+Work in the dimensionless plane with \emph{slowdown} $r=T_S/T_A>1$ on the horizontal axis and \emph{fractional hazard cut} $u\in[0,1)$ on the vertical. The costless, additive–multiplicative correspondence gives the \emph{baseline boundary}
+
+$$
+u\;=\;1-\frac{1}{r}\qquad(\Delta c=0),
+$$
+
+separating an \emph{asex-favored} region (below) from a \emph{sex-favored} region (above). Intuition: sex must offset the tempo penalty $1-1/r$ by buying enough horizon.
+
+\paragraph{Cost/drift surcharge band.}
+With control cost (and drift floor in $c+\kappa/\Ne$), the robust boundary (Sec. 6) adds a surcharge
+
+$$
+u\;=\;1-\frac{1}{r}\;+\;\underbrace{\frac{1}{\Lmax T_S}\log\!\Big(1+\frac{\Delta c}{B}\,e^{\Lmax T_A}\Big)}_{\text{surcharge}~\sigma_{c,\mathrm{drift}}(\Lmax)}.
+$$
+
+For fixed parameters this is a constant \emph{right/up shift} of the baseline. In practice, you plot a \emph{band} by letting $\Delta c$ vary over a plausible range; the top of the band is the conservative (hardest) case.
+
+\paragraph{RG corrections (how variance, skew, synchrony move the line).}
+RG modifies the lag-scale hazard through
+
+$$
+\Lmax \;=\; \mu_T \;-\;\frac{1}{2}\sigma_T^2 \;+\;\frac{1}{6}\kappa_{3,T}\;+\;\cdots,
+$$
+
+and also affects the \emph{ecological} side via $\pi_{>}$ and failure-time tails. The phase diagram responds through two channels:
+
+\begin{itemize}
+\item[$\square$] \emph{ESH channel (moves the inequality):} lowering $\Lmax$ shifts the surcharge term $\sigma_{c,\mathrm{drift}}(\Lmax)$ downward (easier for sex); raising $\Lmax$ shifts it upward (harder). Variance within the $T$-window ($\sigma_T^2$) \emph{reduces} $\Lmax$ (Jensen bonus), right-skew ($\kappa_{3,T}>0$) \emph{increases} it (penalty). Synchrony does not enter this term directly but tends to co-occur with right-skewed regional episodes, effectively raising $\Lmax$ at scale.
+\item[$\square$] \emph{Clock channel (overlays persistence):} variance within blocks has little downside for ESH but long, correlated \emph{runs} (temporal autocorrelation; spatial synchrony) inflate the beyond-horizon share $\pi_{>}$ and shorten $T_{\mathrm{fail}}$. Thus, even where the inequality says “sex wins,” severe synchrony can erase the demographic margin; conversely, anti-synchrony (asynchrony across patches) expands it.
+\end{itemize}
+
+\paragraph{When does autocorrelation help vs.\ hurt?}
+Temporal autocorrelation increases within-block variance (helpful for $\hazT{T}$ via the $-\tfrac12\sigma_T^2$ term) but also increases the probability of long beyond-horizon runs $\pi_{>}$ (harmful for persistence). A simple sufficient condition for a net gain on the correction–failure race is
+\[
+\Delta\hazT{T} \;\lesssim\; -\,\frac{L}{T_{\mathrm{fail}}}\cdot \frac{\partial \log\big((1-\pi_{>})\bar s_{<}\big)}{\partial \hazT{T}}\,,
+\]
+i.e., the ESH reduction (via variance) must outweigh the induced rise in $\pi_{>}$ on the time window set by $T_{\mathrm{fail}}$. Empirically this can be checked by bootstrapping blocks to estimate both sides.
+
+\paragraph{Practical shifts (first-order sensitivity).}
+For small costs ($\Delta c/B\ll 1$) the surcharge is $\sigma_{c,\mathrm{drift}}(\Lmax)\approx \dfrac{\Delta c/B}{\Lmax T_S}$ and
+
+$$
+\Delta u \;\approx\; -\,\frac{(\Delta c/B)}{{\Lmax}^2\,T_S}\,\Delta \Lmax.
+$$
+
+So a variance-induced $\Delta \Lmax=-\tfrac12\Delta\sigma_T^2$ produces a \emph{downward} shift $\Delta u<0$ (sex easier), while a skew-induced $\Delta \Lmax=+\tfrac16\Delta\kappa_{3,T}$ produces an \emph{upward} shift (harder). When costs are not small, evaluate the exact surcharge; the sign of $\partial \sigma_{c,\mathrm{drift}}/\partial \Lmax$ can be checked numerically, and the conservative move is to use the largest $\Lmax$ in the empirical uncertainty set.
+
+\paragraph{Interpreting quadrants (environment classes).}
+Reading the diagram by environment type:
+
+\begin{enumerate}[label=(Q\arabic*)]
+\item  \emph{High hazard, high variability (benign bursts present):} variance lowers $\Lmax$ (downward shift), so the sex-favored region \emph{expands} upward; these are classic “buy-horizon” niches.
+\item \emph{High hazard, high synchrony (regional shocks):}  $\Lmax$ often rises (right-skew episodes) and $\pi_{>}$ increases; the inequality boundary shifts up/right and the persistence overlay contracts—sex needs stronger buffering.
+\item \emph{Low hazard, low variability (long horizons):}  boundary collapses toward the baseline; sex gains little from insurance—expect asex to dominate unless $r$ is close to 1 or costs are near zero.
+\item \emph{Intermediate hazard with heavy tails:} right tails raise $\Lmax$ and shorten failure times via rare-region effects (stretched-exponential tails); sex can still win if buffering \emph{truncates spikes} (cuts $\kappa_{3,T}$) rather than merely reducing mean hazard.
+\end{enumerate}
+
+\paragraph{Why this boundary is conservative (and why the true region is larger).}
+The phase line in Fig.~\ref{fig:phase-fermi} is deliberately built to be a \emph{sufficient} certificate under
+adversarial assumptions; in practice the feasible sex-favored region is typically larger because of several conservative
+choices we make:
+
+\begin{itemize}[leftmargin=1.25em]
+\item[$\square$] \textbf{Worst-case hazards at the sexual lag.} We compare at $\hazmaxT{T_S}$ and even evaluate the asexual term at the \emph{same} $\hazmaxT{T_S}$ (Sec.~\ref{sec:saddle}, conservatism note), which overstates the asexual advantage when $\hazT{T}$ decreases with lag.
+\item[$\square$] \textbf{Single channel, single trait, small control.} We credit sex with \emph{only} pre-fusion buffering on one focal lag $T_S$ and linearize in small $U$. We do not credit multi-phase targeting, large-$U$ curvature, or portfolio gains across traits/lags.
+\item[$\square$] \textbf{ESH-only credit.} The boundary prices only the \emph{realized selection} channel (ESH) and ignores concurrent improvements in the failure clock (e.g.\ demography $g$), reductions in beyond-horizon mass $\pi_{>}$ from desynchronization, or dispersion-driven rescue.
+\item[$\square$] \textbf{No “free” variance bonus.} Unless empirically demonstrated inside the $T_S$ window, we deny sex the Jensen bonus that would reduce $\hazT{T_S}$; the adversary is allowed to suppress variance and add right-skew.
+\item[$\square$] \textbf{Conservative costs.} Costs enter as an additive surcharge; we give no credit for cost offsets (e.g.\ collateral benefits that increase $B$) or condition-dependent expression that gates costs to rare states.
+\end{itemize}
+
+\noindent Beyond these modeling choices, many \emph{out-of-scope} mechanisms would typically shift the phase line further
+\emph{downward/left} (i.e.\ enlarge the sex-favored region). Examples include:
+
+\begin{itemize}[leftmargin=1.25em]
+\item[$\square$] \textbf{Red Queen / host–parasite turnover} (pathogen-limited hazards across hosts, generation-ratio effects).
+\item[$\square$] \textbf{Mutation-load purge and recombination load relief} (beyond ordered-step tempo), and
+\textbf{clonal interference mitigation} (Hill–Robertson beyond the simple ordered ladder).
+\item[$\square$] \textbf{Sexual selection as information} (signals reduce $\Lambda_{\mathrm{mate}}$ and front-load benefits; Sec.~\ref{sec:discussion}).
+\item[$\square$] \textbf{Spatial dispersal / anti-synchrony} (reduces regional $\pi_{>}$ and lengthens $T_{\mathrm{fail}}$).
+\item[$\square$] \textbf{Parental care / provisioning / life-history buffering} (variance reduction in offspring survival increases $B$ and ESH).
+\item[$\square$] \textbf{Assortative mating / conspecific precedence / polyandry filtering} (raises effective conversion, trims high-hazard mismatches).
+\item[$\square$] \textbf{Repair/maintenance mechanisms tied to sex} (e.g.\ TE control, recombinational repair) that reduce background hazard.
+\item[$\square$] \textbf{Multi-trait portfolios} (concurrent lags with imperfect covariance): leverage adds $\propto\|w\|_1$ while adversarial penalty grows only $\propto\|w\|_2$ (Prop.~\ref{prop:diversification}; Cor.~\ref{cor:sqrtm}).
+\end{itemize}
+
+\noindent Taken together, these points imply that the plotted line is a \emph{conservative envelope}. Any empirically
+documented combination of the mechanisms above typically moves the operative boundary down/left, making sex favored over a
+wider region than indicated by the single-channel, worst-case curve.
+
+\paragraph{Two-clock overlay (persistence mask).}
+To keep the diagram honest, overlay a \emph{persistence mask} where
+
+$$
+\frac{L}{(1-\pi_{>})\bar s_{<}} \;<\; \frac{\log(K/N_0)}{|g|},
+$$
+
+using empirical estimates for $(1-\pi_{>})\bar s_{<}$ and $g$. The sex-wins region that also lies under the persistence mask is the \emph{operational} regime where a slower sexual path both wins the inequality and beats the failure clock.
+
+\paragraph{Estimand-ready recipe (how to place a system).}
+For a focal system with estimated $(T_A,T_S,B,\Delta c)$:
+\begin{enumerate}[label=(P\arabic*)]
+\item Estimate $\widehat{\Lambda}^{(T_S)}$, $\widehat{\sigma}_{T_S}^2$, $\widehat{\kappa}_{3,T_S}$, plus bounds $[\underline{\Lmax},\overline{\Lmax}]$ from block bootstrap or constraints → plot the \emph{conservative} boundary with $\overline{\Lmax}$.
+\item Compute $u$ from observed buffering (or feasible $U/\overline{\Lmax}$); compute $r=T_S/T_A$; mark the point and its uncertainty ellipse.
+\item Overlay the persistence mask via $\widehat{\pi}_{>},\widehat{\bar s}_{<},\widehat g$.
+\end{enumerate}
+Points above the (conservative) boundary and under the mask are predicted \emph{sex-favored}; points below or outside the mask are \emph{asex-favored} or non-persistent.
+
+\begin{figure}[t]
+\centering
+% ===== PARAMETERS (keep/edit as needed) =====
+\pgfmathsetmacro{\LambdaTS}{0.1502}   % \Lambda^{(T_S)}
+\pgfmathsetmacro{\TS}{6}              % T_S
+\pgfmathsetmacro{\TA}{4}              % T_A
+\pgfmathsetmacro{\B}{1}               % B
+\pgfmathsetmacro{\dcLo}{0.03}         % lower \Delta c
+\pgfmathsetmacro{\dcHi}{0.08}         % upper \Delta c
+\pgfmathsetmacro{\sigLo}{(1/(\LambdaTS*\TS))*ln(1+(\dcLo/\B)*exp(\LambdaTS*\TA))}
+\pgfmathsetmacro{\sigHi}{(1/(\LambdaTS*\TS))*ln(1+(\dcHi/\B)*exp(\LambdaTS*\TA))}
+
+% Fermi priors (edit these if you want different heuristics)
+\pgfmathsetmacro{\rFmin}{1.1}
+\pgfmathsetmacro{\rFmax}{1.8}
+\pgfmathsetmacro{\uFmin}{0.10}
+\pgfmathsetmacro{\uFmax}{0.40}
+
+% example system point
+\pgfmathsetmacro{\rEx}{1.5}
+\pgfmathsetmacro{\uEx}{0.35}
+
+% label coordinates (precomputed to avoid inline math)
+\pgfmathsetmacro{\xSex}{1.25}
+\pgfmathsetmacro{\ySex}{(1 - 1/\xSex) + \sigHi + 0.11} % above top dashed near left
+\pgfmathsetmacro{\xAsex}{2.35}
+\pgfmathsetmacro{\yAsex}{(1 - 1/\xAsex) - 0.08}        % below baseline to the right
+\definecolor{FermiFill}{RGB}{0,150,160}   % teal-ish fill
+\definecolor{FermiStroke}{RGB}{0,100,110} % darker outline
+
+\begin{tikzpicture}
+\begin{axis}[
+  width=0.86\linewidth, height=0.52\linewidth,
+  xmin=1, xmax=3, ymin=0, ymax=0.7,
+  axis lines=left, axis line style={-{Latex}}, % use {->} if arrows.meta not loaded
+  xlabel={$r=T_S/T_A$}, ylabel={$u$},
+  xtick={1,1.2,1.5,2,3}, ytick={0,0.1,0.3,0.5},
+  tick style={gray!55}, tick label style={/pgf/number format/fixed},
+  grid=both, minor grid style={gray!15}, major grid style={gray!22},
+  legend style={
+    draw=none, fill=none, font=\small,
+    at={(rel axis cs:0.03,1.02)}, anchor=south west
+  },
+  legend cell align=left,
+  clip=false
+]
+
+% === Baseline boundary (costless) ===
+\addplot[very thick,blue!70!black,domain=1.0001:3,samples=400, name path=baseline]
+  {1 - 1/x};
+\addlegendentry{$\Delta c=0$ boundary: $u=1-\tfrac{1}{r}$}
+
+% === Surcharge band (two costs) ===
+\addplot[domain=1.0001:3,samples=400, name path=lower, draw=orange!85, dashed, very thick]
+  {1 - 1/x + \sigLo};
+\addlegendentry{boundary at $\Delta c=\dcLo$}
+
+\addplot[domain=1.0001:3,samples=400, name path=upper, draw=orange!85, dashed, very thick]
+  {1 - 1/x + \sigHi};
+\addlegendentry{boundary at $\Delta c=\dcHi$}
+
+\addplot[orange!25] fill between[of=lower and upper];
+\addlegendimage{area legend, draw=orange!25, fill=orange!25}
+\addlegendentry{cost/drift surcharge band}
+
+% === Fermi prior box (typical ranges) ===
+% Fermi prior box (translucent + crisp outline)
+\addplot[fill=FermiFill, fill opacity=0.35, draw=FermiStroke, thick]
+  coordinates {(\rFmin,\uFmin) (\rFmax,\uFmin) (\rFmax,\uFmax) (\rFmin,\uFmax)} -- cycle;
+
+% === Region labels ===
+\node[font=\small] at (axis cs:\xSex,\ySex) {sex-favored};
+\node[font=\small] at (axis cs:\xAsex,\yAsex) {asex-favored};
+
+% === Example point + label (optional) ===
+\addplot[only marks, mark=*, mark size=1.6pt, color=red!80]
+  coordinates {(\rEx,\uEx)};
+\node[red!80,anchor=west] at (axis cs:\rEx+0.05,\uEx) {\scriptsize example system};
+
+% === On-plot guide (now explains the Fermi overlay) ===
+\node[anchor=south east, align=left, font=\scriptsize,
+      fill=white, draw=gray!40, rounded corners, inner sep=3pt]
+at (rel axis cs:1,0.02) {Guide:\\
+$\bullet$ blue curve: $\Delta c=0$ boundary\\
+$\bullet$ orange band: boundary range for $\Delta c\in[\dcLo,\dcHi]$\\
+$\bullet$ teal box: Fermi priors $r\in[\rFmin,\rFmax],\ u\in[\uFmin,\uFmax]$\\
+$\bullet$ above boundary $\Rightarrow$ sex-favored};
+
+\end{axis}
+\end{tikzpicture}
+
+\caption{Phase diagram with Fermi overlay. The costless boundary is $u=1-\tfrac{1}{r}$ (blue). Costs/drift add an upward surcharge band (orange, between two $\Delta c$ values). The teal rectangle shows plausible first–pass ranges for slowdown $r$ and achievable buffering $u$ (Fermi priors). If the teal box lies largely above the boundary for a system class, sex is \emph{plausibly} favored; targeted estimates of $\Lambda^{(T)}$, $r$, and $u$ should then refine placement. The teal box depicts these Fermi priors (\(r\in[1.1,1.8],\ u\in[0.10,0.40]\)); it is a heuristic region for triage, not a claim about any particular taxon.} 
+\label{fig:phase-fermi}
+\end{figure}
+
+\paragraph{Fermi estimates (first–pass placement).}
+To assess whether a system plausibly lies in the sex–favored region before detailed estimation,
+use the following order–of–magnitude priors and readouts. These are \emph{heuristics}, not literature values;
+they provide a conservative starting point and can be updated with data.
+
+\medskip
+\noindent\textbf{(F1) Lag–scale hazard \(\hazT{T}\).}
+If survival to a trait’s lag \(T\) is roughly \(S_T\in[0.2,\,0.6]\) (i.e., \(20\%\)–\(60\%\) of lineages remain eligible
+at lag), then
+\[
+\hazT{T} \;=\; -\frac{1}{T}\log S_T
+\quad\Rightarrow\quad
+\hazT{T}\in\Big[\frac{-\log 0.6}{T},\,\frac{-\log 0.2}{T}\Big].
+\]
+For \(T\in[4,8]\) seasons this yields the conservative bracket
+\[
+\hazT{T}\ \approx\ 0.08\text{ to }0.27\ \text{ per season.}
+\]
+(Interpretation: if only \(\sim 20\%\) survive to the payoff, hazards are harsh; if \(\sim 60\%\) survive, hazards are
+benign. The robust boundary uses the \emph{upper} end as \(\hazmaxT{T}\).)
+
+\medskip
+\noindent\textbf{(F2) Slowdown ratio \(r=T_S/T_A\).}
+On ordered landscapes where recombination breaks partial assemblies, a generic slowdown of
+\[
+r\ \approx\ 1.1\text{–}1.8
+\]
+is a reasonable first bracket: modest (10–30\%) to substantial (50–80\%). Values \(r\!\gtrsim\!2\) correspond to
+very strongly ordered, disruption-prone ladders.
+
+\medskip
+\noindent\textbf{(F3) Achievable fractional buffering \(u=U/\hazT{T_S}\).}
+Sex–specific pre-fusion mechanisms (encounter boosting, conspecific matching, timing) typically shift a small set of
+high-hazard phases. A conservative prior is
+\[
+u\ \approx\ 0.1\text{–}0.4,
+\]
+i.e., a \(10\%\)–\(40\%\) reduction of the lag-matched hazard at the sexual lag when the buffer is active. (Larger than
+\(0.4\) should be justified by direct data.)
+
+\medskip
+\noindent\textbf{(F4) Cost/drift surcharge.}
+For \(\hazmaxT{T_S}\) in the bracket above and modest per-season cost \(\Delta c/B\in[0,0.08]\),
+the fractional boundary shifts upward by
+\[
+\sigma_{c,\text{drift}} \;=\; \frac{1}{\hazmaxT{T_S}\,T_S}\,
+\log\!\Big(1+\tfrac{\Delta c}{B}e^{\hazmaxT{T_S}T_A}\Big),
+\]
+which is typically a few percent (\(\sim\!0.01\)–\(0.03\)) for the examples below.
+
+\medskip
+\noindent\textbf{Reading the boundary.} In the costless fractional case,
+\[
+u\;>\;1-\frac{1}{r}.
+\]
+Thus:
+\[
+\begin{array}{c|c}
+\ r\ &\ \text{minimum }u\ \\
+\hline
+1.2 & 0.167\\
+1.5 & 0.333\\
+2.0 & 0.500
+\end{array}
+\]
+With costs, add \(\sigma_{c,\text{drift}}\) to the right-hand side.
+
+\medskip
+\noindent\textbf{Worked Fermi readouts (plug–and–play).}
+Take \((T_A,T_S)=(4,6)\Rightarrow r=1.5\), \(\hazmaxT{T_S}=0.15\) (mid–bracket), \(\Delta c/B=0.03\).
+Then
+\[
+\sigma_{c,\text{drift}}=\frac{1}{0.15\cdot 6}\log\!\Big(1+0.03\,e^{0.15\cdot 4}\Big)\approx 0.009,
+\]
+so the conservative threshold is
+\[
+u\;>\;1-\tfrac{1}{1.5}+\sigma_{c,\text{drift}}\ \approx\ 0.333+0.009\;=\;0.342.
+\]
+If your Fermi prior is \(u\approx 0.35\), the system plausibly lies in the sex-favored region; if \(u\approx 0.2\),
+it likely does not—unless \(r\) is closer to \(1.2\) or \(\hazmaxT{T_S}\) is lower than the conservative bracket.
+
+\medskip
+\noindent\textbf{How to tighten.}
+Replace \(S_T\) by empirical within-block survival to get \(\widehat{\hazT{T}}\); refine \(r\) by completion-lag data;
+estimate \(u\) by before/after (or with/without) episodes of sex-specific buffering at the sexual lag; then evaluate the
+robust threshold with \(\overline{\hazmaxT{T_S}}\) (upper CI). The Fermi priors above are only to triage plausibility and
+to make the phase diagram quickly interpretable.
+
+\noindent\emph{Summary.} As conservative first passes: \(r\approx 1.1\text{–}1.8\) (ordered disruption from mild to substantial), \(u\approx 0.10\text{–}0.40\) (10–40\% hazard cut at the sexual lag), and \(\hazmaxT{T}\approx 0.08\text{–}0.27\) per season for lags \(T\in[4,8]\). Plugging these into \(u>1-1/r+\sigma_{c,\mathrm{drift}}\) shows that \(r\in[1.2,1.5]\) is plausibly surmountable with \(u\in[0.2,0.35]\), while \(r\gtrsim 2\) requires \(u\gtrsim 0.5\) (uncommon unless buffering is exceptionally strong or costs are very low).
+
+\paragraph{Worked empirical sketch (how to place a system).}
+Suppose we have a seasonal series of hazard proxies \(\{\Lambda_t\}\) for a focal population and an intervention tag \(Z_t\in\{0,1\}\) that marks seasons when a sex–specific pre-fusion buffer is active (e.g., encounter boosting). We proceed as follows.
+
+\emph{(S1) Block hazard at the sexual lag.} With \(T_S=6\) (data or prior), compute
+\[
+\widehat{\Lambda}^{(T_S)}\;=\;-\frac{1}{T_S}\log\!\Big(\frac{1}{M}\sum_{m=1}^{M} e^{-S_{T_S}^{(m)}}\Big),\quad S_{T_S}^{(m)}=\sum_{k=1}^{T_S}\Lambda_{t_m+k},
+\]
+on overlapping blocks; get a CI by block bootstrap. Example: \(\widehat{\Lambda}^{(T_S)}=0.16\) (95\% CI: 0.14–0.19).
+
+\emph{(S2) Slowdown ratio.} From completion-lag data on ordered steps, fit \(T_A=4.8\), \(T_S=6.6\) \(\Rightarrow\ r=T_S/T_A\approx 1.38\).
+
+\emph{(S3) Achievable buffering.} Re-estimate \(\widehat{\Lambda}^{(T_S)}\) on blocks with \(Z=0\) vs. \(Z=1\):
+\[
+\widehat{U}\;=\;\widehat{\Lambda}^{(T_S)}\!\big|_{Z=0}\;-\;\widehat{\Lambda}^{(T_S)}\!\big|_{Z=1}\;=\;0.16-0.11\;=\;0.05,
+\quad u=\widehat{U}/\widehat{\Lambda}^{(T_S)}\!\big|_{Z=0}\approx 0.31.
+\]
+
+\emph{(S4) Costs and surcharge.} With \(\Delta c/B=0.03\) and a conservative \(\overline{\Lambda}^{(T_S)}=0.19\),
+\[
+\sigma_{c,\mathrm{drift}}
+= \frac{1}{\overline{\Lambda}^{(T_S)}T_S}\log\!\Big(1+\tfrac{\Delta c}{B}e^{\overline{\Lambda}^{(T_S)}T_A}\Big)
+\approx 0.011.
+\]
+
+\emph{(S5) Decision.} The conservative fractional threshold is
+\[
+u \;>\; 1-\tfrac{1}{r} + \sigma_{c,\mathrm{drift}}
+\;=\; 1-\tfrac{1}{1.38}+0.011 \;\approx\; 0.29.
+\]
+Since \(u\approx 0.31>0.29\), sex is predicted \emph{favored} under the worst admissible lag-scale hazard; the exact payoffs or a persistence overlay can be added as in Section~\ref{sec:esh}.
+
+\paragraph{Bridge to examples and data.}
+Section~\ref{sec:example} provides a constructive example showing how asex wins on tempo yet loses on the diagram once variance-induced horizon gains and modest buffering push the point above the boundary. Section~\ref{sec:phase} then lists the field estimands ($\hazT{T}$, cumulants, $\pi_{>}$, $g$) needed to place real systems on this map and falsify the claim.
+
+% sec:example
+\section{Constructive counterexample: faster asex, winning sex}
+\label{sec:example}
+
+\paragraph{Setup: ordered step, burst–spike hazards, sex-specific buffering.}
+Consider an ordered two-step landscape whose payoff arrives only upon completion (single-lag profile $b(\tau)=B\,\delta(\tau-T)$). Let $T_A=4$ and $T_S=6$ (so $r=T_S/T_A=1.5$, i.e., sex is slower per K\&K). Hazards per unit time are i.i.d. with a two-state mixture: benign bursts with rate $\lambda_{\mathrm{lo}}=0.05$ and rare spikes with rate $\lambda_{\mathrm{hi}}=0.70$, occurring with probabilities $1-\alpha=0.8$ and $\alpha=0.2$, respectively. The lag-matched block hazard (Section~\ref{sec:block-hazard}) for a process constant over a unit step is
+
+$$
+\hazT{T} \;=\; -\log\!\Big((1-\alpha)e^{-\lambda_{\mathrm{lo}}}+\alpha e^{-\lambda_{\mathrm{hi}}}\Big).
+$$
+
+Sex has access to \emph{pre-fusion buffering} that targets the spike phase only, reducing $\lambda_{\mathrm{hi}}\mapsto \lambda_{\mathrm{hi}}-\Delta$ during those episodes; asex has no such control (this captures a sex-specific insurance channel). We take $B=1$ and a modest baseline cost+drift floor $c+\kappa/\Ne=0.05$. A small mode-specific buffering cost $\Delta c$ will be included when comparing payoffs.
+
+\paragraph{Baseline (no buffering): asex wins on realized selection.}
+With the parameters above,
+
+$$
+\Lambda_A \;=\; -\log\!\big(0.8e^{-0.05}+0.2e^{-0.70}\big)
+\;=\; -\log(0.8603)\;\approx\;0.1502.
+$$
+
+Realized selections are
+\[
+\seff{A} \;=\; e^{-\Lambda_A T_A} - 0.05
+          \;=\; e^{-0.6008} - 0.05
+          \;\approx\; 0.498,
+\]
+\[
+\seff{S}^{\text{(no buffer)}} \;=\; e^{-\Lambda_A T_S} - 0.05
+          \;=\; e^{-0.9012} - 0.05
+          \;\approx\; 0.356.
+\]
+
+\paragraph{Sex-specific targeted buffering flips the ordering.}
+Apply buffering only in the spike phase with $\Delta=0.50$ (so spikes drop from $0.70$ to $0.20$), leaving asex unchanged. Sex now experiences
+
+$$
+\Lambda_S \;=\; -\log\!\big(0.8e^{-0.05}+0.2e^{-(0.70-\Delta)}\big)
+\;=\; -\log(0.9248)\;\approx\;0.0781,
+$$
+
+while asex remains at $\Lambda_A=0.1502$. The realized selections become
+
+$$
+\seff{S} \;=\; e^{-\Lambda_S T_S}-0.05 \;=\; e^{-0.4686}-0.05 \;\approx\;0.576,\qquad
+\seff{A} \;\approx\;0.498\ \text{(unchanged)}.
+$$
+
+Even charging a small sex-specific buffering cost, say $\Delta c=0.03$, gives $\seff{S}-\Delta c\approx 0.546 > 0.498=\seff{A}$: \emph{sex wins}, despite $T_S>T_A$.
+
+\paragraph{Checks against the robust inequality.}
+The effective additive hazard relief at the sexual lag is $\Delta\Lambda=\Lambda_A-\Lambda_S\approx 0.0721$. Using $\Lmax=\Lambda_A$ for this environment, the robust threshold reads
+
+\[
+\begin{aligned}
+U_\star
+  &= \frac{\Lmax (T_S - T_A)}{T_S}
+     \;+\; \frac{1}{T_S}\,\log\!\Bigl(1+\frac{\Delta c}{B}\,e^{\Lmax T_A}\Bigr) \\[6pt]
+  &= \underbrace{0.1502 \cdot \tfrac{2}{6}}_{0.0501}
+     \;+\; \underbrace{\tfrac{1}{6}\,\log\!\bigl(1+0.03\,e^{0.6008}\bigr)}_{0.0089} \\[6pt]
+  &\approx 0.0590.
+\end{aligned}
+\]
+
+Since $\Delta\Lambda\approx 0.0721>U_\star$, the robust sex-wins condition is satisfied; the explicit payoffs above confirm the flip.
+
+\paragraph{Why this example is robust (and how to tune it).}
+Three features make the flip generic: (i) \emph{sex-specific} buffering concentrates cuts where FK weight is largest (spikes), maximizing leverage; (ii) the larger lag $T_S$ makes sex’s payoff more sensitive to hazard relief (gain $\propto T_S e^{-\Lambda T_S}$), so a given $\Delta\Lambda$ increases sex’s realized benefit faster than asex’s; (iii) discounting is strong enough ($\Lambda_A$ not too small) that horizon extension matters. The construction can be tuned by adjusting $\alpha$ (spike frequency), $\lambda_{\mathrm{hi}}$ (spike severity), and $\Delta$ (buffering strength). Heavy-tailed spikes or added synchrony raise $\Lmax$ (harder), but the same inequality provides the new $U_\star$; trimming spike tails (reducing effective $\kappa_{3,T}$) is particularly efficient, as it both lowers $\hazT{T}$ and reduces the beyond-horizon share $\pi_{>}$.
+
+\section{Discussion}
+\label{sec:discussion}
+
+In Lakatosian terms, the study of sex has often looked like a degenerative research program: a hard core paradox (“asex should be faster”) 
+surrounded by a shifting belt of auxiliary explanations (mutation load, Red Queen, Hill–Robertson, bet-hedging) that rarely cohere. What the 
+ESH framing offers is not a final theory but a modest and conservative rational reconstruction: by taking “selection needs time and hazards discount it” as 
+the hard core, the familiar explanations become consistent limits rather than rival belts. That shift turns a patchwork into the beginnings of a 
+progressive program: it yields a falsifiable inequality, unifies classic results, and generates new questions (multi-trait portfolios, obligate vs. 
+facultative sex, tempo asymmetries as game-theoretic strategies). In that sense the timing is less about novelty of tools than about disciplinary 
+readiness—borrowing language from statistical physics and information theory to restate what biologists already know in a form that invites 
+further synthesis.
+
+\paragraph{Same landscape, new currency.}
+K\&K’s ordered-ladder result is a \emph{tempo} statement: recombination typically lengthens the completion lag for a finished genotype, so $T_S>T_A$ and asex advances faster on the ladder. Our addition is not a different micro-mechanism of adaptation but a \emph{currency} for timing under hazard: ESH converts “when payoffs arrive” into “how much selection is actually realized.” The minimax layer then asks whether a slower path can nevertheless \emph{buy enough horizon} to win in realized selection against an adversarial environment.
+
+\paragraph{Limits that recover K\&K.}
+The robust boundary (additive form \eqref{eq:robust-U}, fractional form \eqref{eq:robust-u}) collapses to K\&K’s speed logic in the benign or no-control limits:
+\begin{enumerate}[label=(L\arabic*)]
+\item \textbf{No buffering.} If $U=0$ (or $u=0$) and $\Delta c\ge 0$, then \eqref{eq:robust-base} reduces to $e^{-\hazT{T}T_S}\le e^{-\hazT{T}T_A}$ for all admissible $\hazT{T}$, i.e. sex cannot beat asex when both face the same hazards and $T_S>T_A$.
+\item \textbf{Benign environments.} As $\Lmax\downarrow 0$ (long horizons), \eqref{eq:robust-U} gives $U_\star\to \frac{1}{T_S}\log(1+\Delta c/B)$. With any positive cost (or even with $\Delta c=0$ but $U\le \Lmax\to 0$), sex cannot clear the boundary unless $r\approx 1$. Thus, in near-hazardless regimes, the K\&K ordering by tempo re-emerges.
+\item \textbf{Immediate payoffs.} If the ordered structure disappears (payoffs effectively immediate), ESH reduces to Kimura’s threshold and the recombination-specific lag penalty vanishes; the comparison reverts to classical drift–selection tradeoffs without a role for order constraints.
+\end{enumerate}
+
+\paragraph{Where the ordering still matters.}
+Our inequality preserves K\&K’s core dependence on $r=T_S/T_A$: the tempo penalty enters exactly as $1-1/r$ in \eqref{eq:robust-u} or as $\Lmax(T_S-T_A)/T_S$ in \eqref{eq:robust-U}. The only way sex can overturn a speed deficit is by reducing the \emph{lag-matched} block hazard—either its mean or its right-tail spikes—enough to expand the usable horizon. In particular, any ecological or mating context that \emph{does not} change $\hazT{T}$ (or changes it symmetrically for both modes) leaves the K\&K ordering intact.
+
+\paragraph{What is (and is not) new.}
+The novelty is twofold and minimal: (i) the ESH accounting that replaces raw tempo with realized selection via a single Laplace tilt; and (ii) the minimax boundary that evaluates the same K\&K slowdown $r$ under the \emph{worst admissible} lag-scale hazard $\Lmax$. Everything else—LD interference on ordered steps, the sign of recombination’s effect on $T$, drift floors—remains as in the classics. Lemmas~\ref{lem:kimura}–\ref{lem:rescue} (Appendix~\ref{sec:unification}) formalize these recoveries.
+
+\paragraph{A simple K\&K reconciliation picture.}
+Think of the decision as two nested questions: (Q1) On your ordered landscape, is $r>1$? If yes, sex is \emph{slower} by K\&K. (Q2) Are hazards and buffering such that $u>1-1/r$ (plus the cost/drift surcharge), evaluated at $\Lmax$? If yes, sex is \emph{better} in realized selection despite being slower in tempo. When hazards are negligible or buffering infeasible, (Q2) fails and K\&K’s conclusion stands. When hazards are material and targeted buffering is available, (Q2) can succeed and flips the outcome. Thus ESH/minimax does not contradict K\&K; it \emph{completes} the story by specifying the ecological regimes where a slower sexual path wins because it extends the future that selection can see.
+
+\paragraph{Not either/or: hazard shelter and symbiosis.}
+“Sex wins” need not mean asexuals lose. By lowering effective hazards, metazoan lineages create \emph{hazard shelters}—microenvironments where partners (often asexual microbes) are brought \emph{inside} the horizon and their faster tempo becomes advantageous again. In ESH terms, host buffering shifts $\Lambda$ down for commensals/mutualists, moving their payoffs into the usable window while the host captures benefits (metabolism, defense, signaling). The outcome is not zero-sum but often synergetic: sexual hosts secure horizon at the organismal scale, while asexual partners exploit it locally—an arrangement our two-clock and boundary logic can in principle quantify without a holobiont model.
+
+\paragraph{When obligate sex wins (robustly).}
+Our analysis suggests several regimes where a \emph{commitment} to sex beats any facultative policy.
+
+(i) \emph{Short benign runs.} Let $L_{\mathrm{lo}}$ be the typical length of low-hazard runs. If $L_{\mathrm{lo}}<T_A+\tau_{\mathrm{sw}}$ (asexual lag plus switching/decision delay), asex cannot realize its payoff before the block ends. Then the two-clock slope under facultative use collapses to that of sex, while obligate sex retains the failure-time gain from a lower hazard every block.
+
+(ii) \emph{Cue noise and adversarial uncertainty.} Suppose mode choice uses a noisy cue with misclassification rate $\varepsilon$. In the minimax frame, the environment can push hazards near the decision boundary so that the expected gain from “opportunistic asex” is
+\[
+\Delta_{\mathrm{fac}} \;\lesssim\; p_{\mathrm{lo}}\!\cdot\!\Big[B\!\big(e^{-\Lambda_{\mathrm{lo}} T_A}-e^{-(\Lambda_{\mathrm{lo}}-U)T_S}\big)\Big] \;-\; \varepsilon\,B T_S e^{-\Lambda_{\mathrm{hi}} T_S}U \;-\; \kappa_{\mathrm{sw}},
+\]
+which is negative once cue error $\varepsilon$ or switching cost $\kappa_{\mathrm{sw}}$ exceeds a small threshold. In that worst-case sense, the \emph{robust} policy is to remain sexual.
+
+(iii) \emph{Synchrony penalties.} RG says spatial/temporal synchrony is a relevant coupling that shortens persistence. Facultative retention of clonal bouts allows synchrony to build (clonal waves), raising $\pi_{>}$ and eroding rescue. Obligate sex breaks synchrony each generation (mixing), shifting both clocks in its favor.
+
+(iv) \emph{Portfolio leverage needs continuity.} Multi-trait co-optimization yields additive leverage $\|w\|_1$ for sex, while the adversary’s penalty scales like $\|w\|_2$. Intermittent asex “turns off” recombination-mediated leverage across traits during asex bouts; the net margin is maximized by continuous sex when lags are dispersed.
+
+(v) \emph{Architecture costs and hysteresis.} Maintaining an asexual fallback carries standing costs (developmental/physiological) that raise the drift floor $c+\kappa/\Ne$. If the expected asex advantage in benign blocks does not exceed this maintenance + switching burden, the obligate sexual genotype is an ESS: any facultative mutant suffers a negative ESH margin per cycle.
+
+\paragraph{Multi-trait portfolios may \emph{simplify} control.}
+While we analyze a single focal trait for clarity, aggregating multiple traits can make the buffering problem easier, not harder. If buffering exhibits diminishing returns within a trait (so $U_j(u_j)$ is concave), then the ESH-tilted gain $G_j(u_j)=B_j\!\left(e^{-(\Lambda^{(T_j)}-U_j(u_j))T_j}-e^{-\Lambda^{(T_j)}T_j}\right)$ is concave in $u_j$, and the budgeted allocation $\max_{\sum_j u_j\le U_{\max}}\sum_j G_j(u_j)$ is a convex program. In discrete bucketed form (protect trait–phase cells), the marginal ESH gain is typically monotone submodular, so greedy selection achieves a $(1-1/e)$ approximation. Moreover, when trait hazards are imperfectly correlated across lags/phases, the minimax ``worst case'' for the portfolio is milder than the single-trait worst case, effectively lowering the joint $\Lambda_{\max}$. Intuitively, a diversified set of benefit lags uses environmental variance as an ally, convexifying the control.
+
+\paragraph{Free energy and large deviations.}
+The block hazard $\hazT{T}=-\tfrac1T\log \E\big[e^{-\sum_{t\le T}\Lambda_t}\big]$ is a free energy / log-partition
+object. By the Donsker--Varadhan variational formula,
+\[
+-\log \E\big[e^{-S_T}\big] \;=\; \inf_{Q}\Big\{\E_Q[S_T] \;+\; D_{\mathrm{KL}}(Q\Vert P)\Big\},
+\]
+so $\hazT{T}$ is the per-time infimum of ``expected hazard + information cost of deviating from $P$.''
+This makes precise why variance helps (there exist $Q$ with smaller expected hazard at limited information cost)
+and why rare, right-skewed spikes hurt (they force larger $D_{\mathrm{KL}}$ penalties to avoid).
+It also clarifies the minimax interpretation: the environment chooses a distribution within constraints (worst $Q$),
+while sex reduces the effective $S_T$ in targeted ways that lower the free energy.
+
+\paragraph{Information budget and estimation.}
+Estimating $\hazT{T}$ is estimating a log-mgf: concentration bounds (Bernstein/Chernoff) imply that
+$\widehat{\Lambda}^{(T)}$ converges at the usual $O\!\big(\sqrt{\tfrac{\Var(e^{-S_T})}{n}}\big)$ rate, so one can
+treat the robust boundary with confidence bands by substituting lower CIs for $(1-\pi_>)\bar s_{<}$ and upper CIs for
+$\Lmax$. Conceptually, the Donsker--Varadhan form shows that horizon extension “spends” information (bits) to lower
+expected hazard; targeted buffering is efficient when large reductions are achievable at small KL cost.
+
+\paragraph{Gibbs variational principle framing.}
+The Donsker–Varadhan identity is the Gibbs variational principle in this setting.
+Interpreting $S_T$ as a Hamiltonian over hazard trajectories, moving from $P$ to a reweighted law $Q$ is a canonical tilting;
+free energy is the optimal tradeoff between lowering ``energy'' (expected hazard) and paying information
+cost (KL). Targeted buffering acts like a controlled, local modification of the Hamiltonian that achieves a larger drop in
+$\mathbb E_Q[S_T]$ per unit KL—hence the emphasis on trimming high-hazard spikes at FK-heavy phases.
+
+\paragraph{Stat mech in evolutionary dynamics}
+Prior theoretical treatments have drawn analogies between evolutionary dynamics and statistical mechanics. For example, one can define a quantity analogous to a free energy or an information entropy that natural selection tends to optimize. At equilibrium, allele frequencies maximize a certain entropy or information measure given constraints (mutation–selection balance yields a stationary distribution $\propto e^{2N_es}$ reminiscent of a Boltzmann distribution) \citep{Sella2005}. Indeed, as Frank illustrates, the fundamental equations of selection can be recast in information-theoretic terms (e.g. increase in mean fitness equals a reduction in information entropy) \citep{Frank2012}.
+
+\paragraph{Signals as information that buys horizon.}
+In the Donsker--Varadhan view, horizon extension trades expected hazard against an information cost (KL). Sexual 
+signals supply precisely such information: they reduce uncertainty about compatibility/quality, enabling a 
+reweighting $Q$ closer to the low-hazard, high-payoff subspace at smaller KL “price.” This explains why sexual 
+selection can lower $\Lambda_{\mathrm{mate}}$ \emph{and} move mass of $b(\tau)$ earlier—both effects purchase 
+time under risk more efficiently than undirected buffering. However, sexual selection can also impose viability costs 
+that raise $c+\kappa/\Ne$; in our accounting it helps only insofar as the combined hazard cut and front-loading 
+gains exceed those costs. The framework does not assume sexual selection is always beneficial—it only quantifies 
+when it \emph{is}. Beyond horizon extension, sexual selection can maintain genetic variance, purge mutation load, 
+accelerate local adaptation via condition–dependent expression, mediate sexual conflict (pre- and post-copulatory), 
+shape speciation through assortative mating and signal–receiver coevolution, and generate Fisher–runaway dynamics 
+with their own viability tradeoffs. These phenomena lie far outside our scope; the ESH framing simply quantifies 
+when the \emph{hazard/timing} channels of sexual selection move the boundary in favor of sex, without taking 
+a position on its many other evolutionary roles.
+
+\paragraph{Why this is profound.}
+The Donsker--Varadhan form does more than re-express a moment: it turns a stochastic survival problem into a \emph{convex tradeoff between energy and information}.
+Lengthening the horizon is equivalent to moving from the physical law $P$ to a nearby law $Q$ that has lower expected hazard, and the
+``price'' of that move is measured in bits (the KL divergence).  The variational identity turns folk wisdom into criteria: stochastic variability 
+is beneficial precisely when a lower-hazard reweighting $Q$ lies close to the data-generating law $P$ (small $D_{\mathrm{KL}}(Q\Vert P)$); 
+tail risk is pernicious because shifting probability mass away from spikes is information-expensive. Control is valuable when it achieves 
+a large decrease in $\E_Q[S_T]$ per unit of KL “cost,” which explains why trimming high-hazard episodes at the most consequential 
+phases pays best. In this light the selection horizon is a free-energy budget: gains are bought with information, and any mechanism 
+that can \emph{reweight} exposure—sex—can purchase the one crucial asset otherwise unavailable: time under risk.
+
+\paragraph{Host–pathogen equilibrium (tempo \emph{and} generation-time).}
+Obligately sexual eukaryote hosts face two disadvantages at once: pathogens often adapt faster on ordered targets \emph{and} cycle 
+through many generations per host season. In the ESH/minimax currency we can put both on a common clock (per host season): 
+the pathogen’s realized advantage is the FK–weighted product over its $m$ within-season cycles, while sex shifts the host side 
+by (i) extending the host’s selection horizon, (ii) structuring/raising the pathogen’s \emph{population-scale} hazard across diverse 
+hosts, and (iii) creating portfolio leverage across defence lags. This yields, in principle, a boundary 
+in \((r, m, u)\)-space (slowdown \(r\), generation ratio \(m\), hazard/portfolio shift \(u\)) that says when the host’s per-season correction 
+rate exceeds the pathogen’s per-season spread—i.e., when the host sometimes wins despite both disadvantages. We do not pursue that 
+here, but the framework suggests how to formalize this familiar intuition within a broader picture of coevolution and Red
+Queen dynamics \citep{Hamilton1981} \citep{AndersonMay1982} \citep{Woolhouse2002}.
+
+\paragraph{Cryptic variation.}
+The ESH framework predicts that hazard variability can make previously invisible variation suddenly relevant for selection,
+so that slower lineages win if they preserve and recombine such “latent insurance.”
+This prediction aligns with empirical findings that cryptic genetic variation can promote rapid adaptation when environments shift:
+for example, \citet{Hayden2011} demonstrated that hidden variation in RNA enzymes enabled populations to evolve novel functions
+under new selective pressures. In our accounting, these results exemplify how hazard cuts lengthen the usable horizon by
+mobilizing variance that is otherwise neutralized in stable conditions. Appendix~\ref{sec:optimal-reservoir} formalizes this as 
+an \emph{optimal reservoir} problem: In the small-control regime, the optimum $R^\star$ satisfies a simple first-order 
+balance $L\,U'(R^\star)=C'(R^\star)$, clarifying when maintaining nominally neutral material is favored. The same analysis also 
+compares $R^\star$ for sex versus asex under a shared hazard profile, showing how lag alignment with the horizon and conversion 
+efficiency (recombination/assembly of cryptic variants) can make sexual lineages sustain a larger useful reservoir.
+
+\paragraph{Invisible insurance.}
+In addition to cryptic variation, another way sex wins is by buying a hazard insurance 
+portfolio--in other words, evolving a wide range of conditionally inducible hazard-buffering processes and behaviors to manage portfolio risk. These may 
+remain quiescent in benign periods and only express briefly under specific challenges. This sparsity and conditionality makes 
+retrospective detection difficult, especially in survivor-conditioned  or highly aggregated datasets, because most observations may lie 
+outside the narrow windows when buffering is active and routine coarse-graining further attenuates any signal. As a 
+result, null and buffered histories can appear statistically similar unless the data already resolve the relevant timescales 
+and state variables. In very general terms, a more probative approach is \emph{prospective}: pre-specify a specific shock 
+curriculum that is expected to trigger a hypothesized hazard buffering mechanism, register the time window and readouts 
+in advance, and sample at the cadence of the  putative response.
+
+\paragraph{Living on the edge.}
+Our results suggest a counterintuitive moral. In a single-trait setting sex can
+be fragile, but in a multi-trait portfolio an adversarial environment can
+paradoxically enlarge the regime where sex wins: variance and lag dispersion
+turn into convexifying allies, while the adversary cannot drive all lags to
+their worst simultaneously. Yet this is not a recipe for universal advantage.
+Excessive hazard still shortens horizons and swamps selection altogether. The
+Goldilocks zone is an intermediate regime: enough hazard and variability to make
+buffering matter, but not so much that even the fastest corrections fail. In
+that sense, sex is favored precisely when lineages live on the edge between
+correction and collapse.
+
+
+\section{Scope and limits}
+\label{sec:scope}
+
+\paragraph{Not a general theory of sex.}
+We emphasize that our analysis does not pretend to provide a general theory of
+the evolutionary rationale of sex. The scope of that question is vastly broader
+and more multi-faceted than anything modeled here: it involves mutation–selection
+balance, clonal interference, parasite–host coevolution (the Red Queen),
+population-structure effects, genomic conflict, and many other axes known and unknown that lie
+outside the narrow tradeoff space we analyze. Our contribution is more modest and
+specific: to show that even in the classical Kondrashov \& Kondrashov regime,
+where sex appears maladaptive because it slows progress on ordered landscapes,
+the hazard-discounting framework yields sharp conditions under which sex can
+still prevail. That is, we only place one piece of the puzzle, not resolve the whole picture.
+
+\paragraph{On accessibility.}
+We concede that the present treatment is mathematically dense and will not be immediately accessible to all evolutionary biologists. This is largely unavoidable given our aim: to state the argument in a form that is both internally consistent and formally conservative, so that it recovers classical results in the appropriate limits and yields sharp, falsifiable boundaries. The cost of rigor here is reduced accessibility. We view this note as a “theory skeleton’’: its immediate audience is readers comfortable with the mathematics, and its longer-term impact will depend on subsequent expositions, simplifications, and empirical applications that make the core ideas more broadly approachable.
+
+\paragraph{On biological mechanisms.}
+Our formalism deliberately treats hazard reduction in abstract terms (``pre-fusion buffering,'' ``sex-specific hazard control'') because the point of this theory note is to identify when \emph{any} such mechanism would be decisive. That said, the abstractions have concrete counterparts. In broadcast spawners, gamete fusion itself is a hazard gate: mechanisms that increase encounter efficiency (e.g., chemoattractants, synchronized release, sperm storage organs) directly reduce $\hazT{T}$ for sexual lineages. In internal fertilizers, mate-finding, courtship, and gamete protection all act as pre-fusion buffers. More broadly, sex-specific insurance can manifest as variance reduction in offspring survival (parental provisioning, genetic recombination breaking linkage with deleterious alleles) or as desynchronization across patches (bet-hedging in timing of reproduction). The point is not to single out one mechanism but to clarify that \emph{if} a lineage can reduce lag-scale hazard in a way tied to sexual reproduction, then our inequalities specify when that leverage outweighs the recombination slowdown.
+
+\paragraph{On scope and generality.}
+The framework is intentionally developed in a narrow setting—ordered landscapes with sex-specific buffering—because this is precisely the harsh regime where classical results (K\&K) make sex look least favorable. Showing that the ESH/minimax treatment can still overturn that conclusion under well-defined conditions is therefore a strong test case. More broadly, nothing in the ESH definition requires ordered payoffs or particular hazard structures: any benefit profile $b(\tau)$ and any admissible hazard process $\{\Lambda_t\}$ yields the same Laplace-tilted accounting. Ordered ladders simply provide the most transparent illustration. In this sense the scope is narrow in exposition but general in principle, analogous to how Kimura’s drift threshold or Hamilton’s sex ratio were originally derived in highly stylized settings yet captured widely applicable logic. Extensions to richer payoff profiles, multi-trait interactions, or non-sex-specific hazard control are straightforward relaxations of $b(\tau)$ or $U(\mathbf u)$ and remain compatible with the minimax framework.
+
+\paragraph{No Free Lunch.}
+Any universal, assumption-free aggregator over environments is impossible in general. Our boundary is therefore \emph{set-relative}: it is sufficient for all
+hazards in the declared uncertainty set $\Hset$ (lag-matched cumulant bounds/tail class), and makes no claim outside that domain.
+
+\paragraph{On implementation challenges.}
+We readily acknowledge that two key limitations are practical rather than theoretical: (i) empirically estimating lag-matched block hazards $\hazT{T}$ with sufficient precision, and (ii) linking the abstract notion of sex-specific buffering to concrete biological mechanisms in particular taxa. Both are nontrivial challenges, but they do not undermine the theoretical logic. The intent of this note is not to solve the empirical estimation problem or exhaustively catalogue mechanisms, but to set out a conservative framework within which such work can proceed. As with many classic theory models, the immediate value is conceptual: mapping out the tradeoff space in the abstract, clarifying where classical results are recovered, and identifying sharp conditions under which sex can win. Whether by direct operationalization or by reduction to simpler limiting forms, future empirical and modeling work can then build on this scaffolding.
+
+\paragraph{Modeling scope and standing assumptions.}
+Our analysis targets ordered/epistatic settings where a completed genotype yields a delayed payoff and sex typically increases the completion lag ($T_S>T_A$, K\&K). We assume: (A1) a well-defined benefit time-profile $b(\tau)$ for the focal change; (A2) hazards that admit a lag-matched FK compression $\hazT{T}$ (Section~\ref{sec:block-hazard}) over the relevant $T$; (A3) small, targeted buffering $U$ available to sex with convex cost $\Delta c$; (A4) a bounded drift floor $c+\kappa/\Ne$; (A5) a compact, convex uncertainty set $\mathcal H(T)$ for block hazards; (A6) weak dependence/mixing sufficient for concentration of seasonal mixtures (Section~\ref{sec:esh}). These are deliberately conservative: they ensure existence of the saddle and the robust boundary without committing to a parametric environment.
+
+\paragraph{Validity domains (when the accounting is faithful).}
+The ESH object $\seff(\Lambda)=\widehat b(\Lambda)-(c+\kappa/\Ne)$ is exact when hazards are constant within a block and remains faithful under mixing if $T$ matches the trait’s benefit lag. The minimax boundary (Section~\ref{sec:saddle}) is sufficient (not necessary): it guarantees sex wins even at the adversary’s edge $\Lmax$, and therefore may understate the parameter region where sex actually wins for a given empirical hazard series.
+
+\paragraph{Heavy tails, long memory, and non-ergodicity.}
+If hazard increments have heavy right tails or long memory, the log-mgf at $\theta=-1$ defining $\hazT{T}$ may be ill-behaved. Two safeguards still hold: (i) Jensen implies $\hazT{T}\le \mu_T$ (variance never harms ESH); (ii) right-tail thickening effectively raises $\Lmax$ and beyond-horizon mass $\pi_{>}$, tightening the boundary. For non-ergodic or regime-switching environments, $\mathcal H(T)$ should be specified as a union of regime-constrained sets; the robust inequality then uses the maximal $\Lmax$ across regimes.
+
+\paragraph{Population scale and patch number.}
+Our results abstract away from explicit population size and the number of patches.
+Small census or effective size depresses $\Ne$ (raising the drift floor $\kappa/\Ne$),
+inflates demographic variance, and weakens the concentration used in the usable-seasons slope
+$(1-\pi_{>})\bar s_{<}$; few patches reduce the scope for spatial asynchrony and portfolio effects.
+Operationally, the robust inequalities remain \emph{sufficient} but become more conservative if one
+(1) replaces $(1-\pi_{>})\bar s_{<}$ by a finite-sample lower confidence bound (accounting for demographic
+stochasticity), (2) evaluates $\Lmax$ under the observed patch correlation (raising it when the patch count is small),
+and (3) uses an $\Ne$ appropriate to the life-cycle stage that limits persistence. In very small $\Ne$ or very few
+patches, the boundary shifts right (harder for sex): both clocks move against rescue—failure times shorten and the
+realized selection slope tightens—without altering the qualitative logic.
+
+\paragraph{Synchrony and rare-region effects.}
+Temporal autocorrelation inflates block variance (helpful in the ESH channel) but also lengthens correlated bad runs (harmful in the failure-clock channel). Spatial synchrony (Moran effect) can dominate through rare-region statistics (stretched-exponential tails for $T_{\mathrm{fail}}$). Our boundary remains valid as a sufficient condition; however, persistence overlays may become decisive when synchrony is strong.
+
+\paragraph{Sex specificity and costs.}
+The framework requires that buffering be at least partly sex-specific at the relevant lag (e.g., pre-fusion control, pair-finding insurance). If buffering affects both modes symmetrically, $\Delta\Lambda$ cancels and the K\&K ordering by tempo persists. Explicit costs (energetic, time, mating opportunity) enter only through $\Delta c$; recombination load or mutation load beyond the ordered-ladder effect should be subsumed into $c$ to avoid double counting.
+
+\paragraph{Block-size misspecification.}
+If the chosen $T$ underestimates the benefit lag, $\hazT{T}$ is too optimistic (hazard is under-aggregated) and the boundary may be overly permissive; if $T$ overestimates lag, $\hazT{T}$ is conservative and the boundary may be too strict. A practical hedge is to evaluate the inequality across a small range of $T$ bracketing the plausible lag and adopt the worst-case $\Lmax$.
+
+\paragraph{Environment endogeneity and feedbacks.}
+We treat the environment as adversarial but exogenous at the block scale. If sex changes hazards indirectly (e.g., via density, assortative mating, or niche choice), these channels should be folded into the control map $U(\mathbf u)$ or into $\mathcal H(T)$ as constraints; the saddle still exists under convexity. Endogenous oscillations at or below the trait lag weaken the FK compression unless explicitly modeled.
+
+\paragraph{Sufficient vs. necessary: what the inequality guarantees.}
+The robust thresholds $U_\star$ and $u_\star$ are \emph{sufficient} for sex to beat asex under worst-case lag-scale hazards. Failure to meet them does not imply sex never wins—only that the guarantee does not hold at $\Lmax$. Conversely, meeting them implies sex wins without assuming favorable variance, skew, or synchrony—those only make the true region larger.
+
+\paragraph{Beyond small control and linear targeting.}
+Our saddle proof and closed-form thresholds use small-control linearizations. For large $U$ or nonlinear targeting (e.g., saturating or thresholded buffering), the value function remains convex in $\hazT{T}$ and concave in $\mathbf u$ under standard conditions, so Sion’s theorem still applies; the algebraic boundary becomes implicit but can be solved numerically. Phase-targeted optimality persists qualitatively (cut the FK-heaviest phases first).
+
+\paragraph{Multi-trait interactions and LD.}
+We analyze a focal trait; multiple concurrent ladders introduce linkage and competition for buffering. The ESH still applies trait-wise, but the minimax game becomes multi-objective (allocate $U$ across ladders to maximize the minimum advantage). LD and interference then enter through how recombination modifies each ladder’s effective $T$; this can be layered with our analysis without changing its logic.
+
+\paragraph{Conservative nature of the claim.}
+The theory is intentionally one-way: it recovers the classical limits (Appendix A), and its main inequality certifies sex’s advantage under the \emph{worst} admissible hazards at lag scale. Any empirically demonstrated variance within blocks, anti-synchrony across space, or spike trimming (reduced $\kappa_{3,T}$) only widens the true sex-wins region relative to our conservative boundary.
+
+
+% === Figures ===
+%\section*{Figure call-outs}
+%\noindent\textbf{F1. Phase diagram.} $(u,r)$ plane with cost/drift bands; arrows indicating left shift from variance and right shift from skew/synchrony.\
+%\textbf{F2. Two clocks.} Cumulative realized selection slope vs failure-time distribution, with/without sex.\
+%\textbf{F3. Block hazard schematic.} Illustration of $\horizon^{(T)}$ and cumulant corrections at $b=T$.\
+%\textbf{F4. Counterexample.} Time series of hazards, FK weights, and outcome bars (asex faster; sex wins).
+
+
+\section*{Declarations}
+
+\noindent\textbf{Funding.}
+No external funding was received for this work.
+
+\medskip
+\noindent\textbf{Competing interests.}
+The author declares no competing interests.
+
+\medskip
+\noindent\textbf{Ethics approval.}
+Not applicable. This theoretical study involved no human or animal subjects and no clinical data.
+
+\medskip
+\noindent\textbf{Data and code availability.}
+Not applicable. No new datasets or analysis code were generated.
+
+\medskip
+\noindent\textbf{Author contributions.}
+Sole author: conceptualization, methodology, formal analysis, and writing.
+
+\medskip
+\noindent\textbf{Acknowledgments.}
+The author used large language models for drafting, proofing, and \LaTeX{} formatting assistance, and for critical review suggestions: ChatGPT (GPT-5) and Anthropic Claude Sonnet (versions~4 and~4.5). 
+The author verified all mathematical claims and is responsible for the content and any errors.
+
+\medskip
+\noindent\textbf{Provenance and versioning.}
+Repository: \url{https://github.com/yourorg/yourrepo} (commit \texttt{abc1234}). 
+Compiled with pdf\TeX{} 1.40.27 (TeX Live 2025). 
+
+\medskip
+\noindent\textbf{License.}
+This preprint is distributed under the Creative Commons Attribution 4.0 International (CC BY 4.0) license.
+
+% === Appendices ===
+\appendix
+\addtocontents{toc}{\protect\setcounter{tocdepth}{1}} % no subsections in TOC
+
+%% Unification kit
+\section{ESH unification kit (classical recoveries)}
+\label{sec:unification}
+
+\paragraph{Model pluralism without overreach.}
+ESH acts as a \emph{translation layer} along the timing-under-hazard axis: Kimura, Fisher/Hamilton, bet-hedging, Hill–Robertson signs, and rescue can be read as limits or recastings in the same currency of predictable survival. We present these as \emph{recoveries} and \emph{reformulations}, not reductions of their full theories to a single formula.
+
+\noindent\textit{Notation.} For any nonnegative, integrable payoff profile $b\in L^1_+([0,\infty))$,
+let $M:=\sup_{\Lambda\ge 0}\widehat b(\Lambda)=\widehat b(0)=\int_0^\infty b(\tau)\,d\tau<\infty$.
+We will use $0\le X_t\le M$ as a generic boundedness statement below.
+
+%% Kimura
+\begin{lemma}[Kimura drift threshold]\label{lem:kimura}
+If $b(\tau)=s\,\delta_0(\tau)$ (an immediate payoff of magnitude $s$) and the hazard is constant within the block, then
+\[
+\seff \;=\; s - \big(c+\kappa/\Ne\big),
+\]
+so selection is effectively neutral unless $s > c+\kappa/\Ne$. This reproduces the classical $\Theta(1/\Ne)$ drift threshold (with model-dependent constant $\kappa=O(1)$).
+\end{lemma}
+
+\begin{proof}
+By definition of the Effective Selection Horizon,
+\[
+\seff(\Lambda)\;=\;\widehat b(\Lambda)\;-\;\big(c+\kappa/\Ne\big),
+\qquad
+\widehat b(\Lambda)\;=\;\int_0^\infty e^{-\Lambda\tau}\,b(\tau)\,d\tau.
+\]
+With $b(\tau)=s\,\delta_0(\tau)$ we have $\widehat b(\Lambda)=s$ because $e^{-\Lambda\cdot 0}=1$. Hence $\seff=s-(c+\kappa/\Ne)$, independent of $\Lambda$. The sign change at $s=c+\kappa/\Ne$ is exactly the classic small-$s$ drift-vs-selection threshold, with $\kappa$ the usual $O(1)$ constant determined by the life-cycle/diffusion scaling (e.g., $\kappa\in[\tfrac12,1]$ across common models).
+\end{proof}
+
+\begin{remark}[Hazard irrelevance for immediate payoffs; small-delay perturbation]
+When benefits are instantaneous, hazard discounting drops out: ESH reduces to the Kimura form, confirming that our framework is a conservative extension in this limit. If the payoff arrives after a tiny delay $\varepsilon>0$, i.e. $b(\tau)=s\,\delta_\varepsilon(\tau)$, then $\widehat b(\Lambda)=s\,e^{-\Lambda\varepsilon}$ and the threshold becomes
+\[
+s \;>\; \big(c+\kappa/\Ne\big)\,e^{\Lambda\varepsilon}
+\;=\; \big(c+\kappa/\Ne\big)\,\big(1+\Lambda\varepsilon+O(\varepsilon^2)\big),
+\]
+exhibiting how even a vanishingly small lag $\varepsilon$ tightens the Kimura threshold by the FK factor $e^{\Lambda\varepsilon}$.
+\end{remark}
+
+%% Hamilton-Fisher
+\begin{lemma}[Hamilton/Fisher sex ratio]\label{lem:hamilton}
+Let $x\in[0,1]$ denote parental investment in males (with $1-x$ in females).
+Assume the mating-failure component of hazard is a differentiable function
+$\Lambda_{\mathrm{mate}}(x)$ and total lag-scale hazard enters ESH as
+$\Lambda(x)=\Lambda_0+\Lambda_{\mathrm{mate}}(x)$.
+Assume further that the per-offspring investment cost is $c(x)=c_m x + c_f(1-x)$.
+Then maximizing $\seff(x)=\widehat{b}(\Lambda(x))-(c(x)+\kappa/\Ne)$ over $x$ yields:
+\begin{enumerate}[label=(\alph*)]
+\item \textbf{Symmetric costs, symmetric mating hazard.} If $c_m=c_f$ and
+$\Lambda_{\mathrm{mate}}$ is symmetric and strictly convex around $1/2$
+(i.e.\ $\Lambda_{\mathrm{mate}}(x)=\Lambda_{\mathrm{mate}}(1-x)$ and $\Lambda_{\mathrm{mate}}''(x)>0$),
+then the unique maximizer is $x^{\ast}=1/2$ (the Fisher--Hamilton $1{:}1$ sex ratio).
+\item \textbf{Asymmetric costs (equal marginal returns).} If $c_m\neq c_f$,
+the optimum $x^{\ast}$ satisfies the first-order condition
+\begin{equation}\label{eq:hamilton-foc}
+-\widehat{b}'\!\big(\Lambda(x^{\ast})\big)\,\Lambda_{\mathrm{mate}}'(x^{\ast}) \;=\; c_m-c_f,
+\end{equation}
+i.e.\ investment is shifted toward the cheaper sex until the marginal increase in mating hazard
+balances the cost asymmetry. This is the equal-marginal-returns rule.
+\end{enumerate}
+\end{lemma}
+
+\begin{proof}[Proof sketch]
+By the ESH definition, $\seff(x)=\widehat b(\Lambda_0+\Lambda_{\mathrm{mate}}(x))-(c_m x+c_f(1-x)+\kappa/\Ne)$.
+Because $\widehat b$ is strictly decreasing and convex in its argument (Section~\ref{sec:esh} ),
+the derivative is
+\[
+\frac{d}{dx}\seff(x)\;=\;-\widehat b'\!\big(\Lambda(x)\big)\,\Lambda_{\mathrm{mate}}'(x)\;-\;(c_m-c_f),
+\]
+with $-\widehat b'(\cdot)>0$. Setting this to zero gives the first-order condition \eqref{eq:hamilton-foc}.
+For (a), if $c_m=c_f$ the FOC reduces to $\Lambda_{\mathrm{mate}}'(x^{\ast})=0$, and symmetry plus strict convexity
+imply the unique solution $x^{\ast}=1/2$. For (b), strict convexity of $\Lambda_{\mathrm{mate}}$ ensures a unique
+solution to \eqref{eq:hamilton-foc}; its sign shows $x^{\ast}$ is shifted toward the cheaper sex
+($c_m<c_f\Rightarrow x^{\ast}>\tfrac12$), exactly equalizing marginal returns.
+
+\noindent
+For maximality under (a): by symmetry and strict convexity, $x\teq\tfrac12$ is the unique \emph{minimizer}
+of $\Lambda_{\mathrm{mate}}(x)$. Since $\widehat b$ is strictly decreasing, $x\teq\tfrac12$ is the unique
+\emph{maximizer} of $\seff(x)=\widehat b(\Lambda_0+\Lambda_{\mathrm{mate}}(x))-(c+\kappa/\Ne)$.
+Under (b), \eqref{eq:hamilton-foc} is the equal–marginal–returns condition; strict convexity of
+$\Lambda_{\mathrm{mate}}$ ensures a unique interior solution when it exists, otherwise the optimum
+lies at a boundary point where the inequality corresponding to \eqref{eq:hamilton-foc} reverses.
+\end{proof}
+
+\begin{remark}[Placement within classical theory]
+Equation~\eqref{eq:hamilton-foc} recovers Fisher/Hamilton’s logic in ESH form:
+the factor $-\widehat b'(\Lambda)=\mu_\Lambda\,\widehat b(\Lambda)$ (Section~\ref{sec:esh}) is a positive scale
+that converts changes in mating hazard into changes in realized selection.
+With immediate or very short-lag payoffs, $\widehat b'\!\big(\Lambda(x)\big)$ is nearly constant across $x$,
+so maximizing $\seff$ is equivalent to minimizing $\Lambda_{\mathrm{mate}}(x)$ (subject to costs),
+yielding $x^{\ast}=1/2$ under symmetry or the equal-marginal-returns rule under asymmetry.
+Thus the sex-ratio result is a direct limiting corollary of ESH, not an additional assumption.
+\end{remark}
+
+%% Bet-hedging
+
+\begin{lemma}[Bet-hedging as geometric mean]\label{lem:bet}
+Let $\{w_t\}_{t\ge 1}$ be per-season fitness multipliers with $w_t=1+s_t$ and immediate payoffs (no delay), and suppose $\{w_t\}$ is stationary ergodic with $\mathbb E[|s_t|^3]<\infty$ and $|s_t|<1$ a.s.
+Maximizing cumulative realized selection over $n$ seasons is equivalent to maximizing the geometric-mean growth rate
+\[
+g \;:=\; \mathbb E[\log w_t].
+\]
+Moreover, for small $|s_t|$ (second-order expansion),
+\[
+g \;=\; \mathbb E[s_t] \;-\; \tfrac12 \Var(s_t) \;-\; \tfrac12 \big(\mathbb E[s_t]\big)^2 \;+\; o\!\big(\Var(s_t)+(\mathbb E[s_t])^2\big),
+\]
+so, to second order, variability reduces long-run growth by $\tfrac12\Var(s_t)$ (the classic bet-hedging penalty).
+\end{lemma}
+
+\begin{proof}
+With immediate payoffs $b(\tau)=s\,\delta_0(\tau)$ the ESH reduces to $\seff{t}=s_t-(c+\kappa/\Ne)$ (Lemma~\ref{lem:kimura}); hazards do not discount within a season at $\tau=0$. Under multiplicative reproduction, the per-season change in the log-odds (or Malthusian growth) is
+\[
+\Delta \ell_t \;=\; \log w_t \;-\; (c+\kappa/\Ne).
+\]
+Summing gives
+\[
+S_n \;=\; \sum_{t=1}^n \Delta \ell_t \;=\; \sum_{t=1}^n \log w_t \;-\; n\,(c+\kappa/\Ne).
+\]
+Equivalently, under weak selection, $\log(1+s_t)= s_t - \tfrac12 s_t^2 + O(|s_t|^3)$, so
+\[
+S_n \;=\; \sum_{t=1}^n \!\Big(s_t - \tfrac12 s_t^2\Big) \;-\; n(c+\kappa/\Ne) \;+\; O\!\Big(\sum_{t=1}^n |s_t|^3\Big),
+\]
+which yields the same limit for $g$.
+
+By the ergodic theorem, $\frac1n\sum_{t=1}^n \log w_t \to \mathbb E[\log w_t]=g$ almost surely, so maximizing $S_n$ (for fixed $c+\kappa/\Ne$) is equivalent to maximizing $g$.
+
+For the expansion, write $\log(1+s)= s - \tfrac12 s^2 + R_3(s)$ with $|R_3(s)|\le C|s|^3$ for $|s|<1$.
+Taking expectations and using $\mathbb E[s^2]=\Var(s)+(\mathbb E s)^2$ yields
+\[
+\mathbb E[\log(1+s)] \;=\; \mathbb E[s] \;-\; \tfrac12 \Var(s) \;-\; \tfrac12\big(\mathbb E[s]\big)^2 \;+\; \mathbb E[R_3(s)],
+\]
+and the stated $o(\cdot)$ term follows from the moment bound.
+\end{proof}
+
+\begin{remark}[Relation to ESH and the variance penalty]
+In the immediate-payoff limit, the FK hazard tilt disappears at $\tau=0$, and ESH recovers the classical \emph{geometric-mean fitness} criterion.
+The $-\tfrac12\Var(s)$ term quantifies the bet-hedging benefit of strategies that reduce inter-seasonal variance in $s_t$ at fixed mean.
+When payoffs are \emph{delayed}, ESH weights contributions by $e^{-\Lambda \tau}$ before logs are aggregated, so both the mean of $s_t$ and its effective timing profile $b(\tau)$ matter; Lemma~\ref{lem:rescue} shows how this couples to persistence via the usable-seasons slope.
+\end{remark}
+
+\begin{remark}[Weak-selection equivalence]
+To second order, maximizing $\mathbb E[\log(1+s_t)]$ is equivalent to maximizing $\mathbb E[s_t]-\tfrac12\mathbb E[s_t^2]$.
+This makes the variance penalty explicit in the small-$s$ limit without leaving the ESH framework.
+\end{remark}
+
+%% Hill-Robertson
+\begin{lemma}[LD / Hill--Robertson interference]\label{lem:ld}
+Consider two diallelic loci $A/a$ and $B/b$ with recombination rate $r\in[0,1/2]$.
+Let haplotype frequencies be $x_{AB},x_{Ab},x_{aB},x_{ab}$, allele frequencies $p_A,p_B$, and linkage disequilibrium $D:=x_{AB}x_{ab}-x_{Ab}x_{aB}$.
+Let realized (ESH-tilted) selection contributions be
+$\tilde s_A,\tilde s_B$ for the single mutants and $\tilde s_{AB}$ for the double, and define ESH-epistasis
+\[
+\tilde\sigma \;:=\; \tilde s_{AB} - \tilde s_A - \tilde s_B,
+\qquad
+\tilde s_\bullet \;=\; \widehat b_\bullet\!\big(\hazT{T}\big) \;-\; \big(c+\kappa/\Ne\big).
+\]
+(Here $\widehat b_\bullet$ is the Laplace tilt of the \emph{genotype-specific} payoff profile $b_\bullet(\tau)$ at the lag-matched hazard.)
+Under \emph{weak selection}, the one-step LD recursion to first order is
+\begin{equation}\label{eq:LD-QLE}
+D' \;=\; (1-r)\,D \;+\; p_A(1-p_A)\,p_B(1-p_B)\,\tilde\sigma \;+\; O\!\big(\tilde s^2,\, r\,\tilde s\big).
+\end{equation}
+Hence (i) positive ESH-epistasis $\tilde\sigma>0$ generates \emph{positive} LD, while recombination erodes it at rate $r$; (ii) the change in mean realized log fitness contains the covariance term $D\,\tilde\sigma$ (to first order), so recombination reduces the response to selection when $\tilde\sigma>0$ (Hill--Robertson interference), and can increase it when $\tilde\sigma<0$.
+\end{lemma}
+
+\begin{proof}[Proof sketch]
+Write haplotype log-fitnesses (weak-selection scale) as
+\[
+w_{AB}=1+\tilde s_A+\tilde s_B+\tilde\sigma,\quad
+w_{Ab}=1+\tilde s_A,\quad
+w_{aB}=1+\tilde s_B,\quad
+w_{ab}=1.
+\]
+Standard two-locus algebra (or the Price equation with recombination) yields after one round of selection and recombination
+\[
+D' \;=\; (1-r)\,D \;+\; p_A(1-p_A)\,p_B(1-p_B)\,\tilde\sigma \;+\; O\!\big(\tilde s^2,\, r\,\tilde s\big),
+\]
+and the change in mean log fitness includes the covariance term $D\,\tilde\sigma$ to first order.
+ESH enters only through replacing raw coefficients by $\tilde s_\bullet=\widehat b_\bullet(\hazT{T})-(c+\kappa/\Ne)$, preserving signs while discounting magnitudes by hazard.
+\end{proof}
+
+\paragraph{Scope clarification.}
+We do not derive new LD algebra; we only \emph{recast} the standard two-locus recursion with ESH-tilted coefficients so the ordered-step timing enters transparently. Signs and qualitative conclusions are preserved; magnitudes are discounted by the lag-matched hazard.
+
+\paragraph{No universal scalar for multilocus.}
+In general, epistatic multilocus dynamics cannot be summarized by a single scalar that is
+monotone across all selection–recombination regimes. Our use of ESH here is limited to
+tilted coefficients in the standard two-locus recursion; we do not claim a universal scalar
+fitness for multilocus evolution.
+
+\begin{corollary}[QLE steady state and recombination cost under ESH]\label{cor:QLE}
+Under quasi-linkage equilibrium (QLE), i.e.\ $|\tilde s|\ll r\le \tfrac12$, the quasi-steady LD is
+\[
+D^{\ast} \;\approx\; \frac{p_A(1-p_A)\,p_B(1-p_B)}{r}\,\tilde\sigma,
+\]
+and the epistatic contribution to the change in mean realized log fitness is
+\[
+\Delta \bar\ell_{\mathrm{epi}} \;\approx\; D^{\ast}\,\tilde\sigma \;=\; \frac{p_A(1-p_A)\,p_B(1-p_B)}{r}\,\tilde\sigma^2.
+\]
+Thus increasing recombination reduces the realized epistatic gain when $\tilde\sigma\neq 0$ (the Hill--Robertson cost), with magnitudes attenuated by FK tilting through $\tilde\sigma$.
+\end{corollary}
+
+\begin{remark}[Ordered steps under ESH; marginal effect of hazard]
+On a short ordered ladder, partial genotypes typically have negligible realized benefit at the sexual lag (e.g.\ $\widehat b_{Ab}(\Lambda^{(T_S)})\approx \widehat b_{aB}(\Lambda^{(T_S)})\approx 0$),
+while the completed double has $\widehat b_{AB}(\Lambda^{(T_S)})=B\,e^{-\Lambda^{(T_S)}T_S}$.
+Thus $\tilde\sigma\approx \widehat b_{AB}(\Lambda^{(T_S)})>0$ and selection \emph{creates} positive LD; recombination reduces $D$ by $r$, diminishing the $D\,\tilde\sigma$ term—this is Hill--Robertson interference in ESH form.
+Because $\widehat b_{AB}(\Lambda^{(T_S)})=B e^{-\Lambda^{(T_S)}T_S}$, the \emph{marginal} penalty for a recombination-induced increase $\Delta T$ scales as $\Lambda^{(T_S)} e^{-\Lambda^{(T_S)}T_S}\,\Delta T$; for moderate hazards (below the horizon) this amplifies the effect of lag increases, whereas at very high hazards both sexual and asexual paths are muted.
+\end{remark}
+
+%% Rescue
+\begin{lemma}[Evolutionary rescue as a race of clocks]\label{lem:rescue}
+Let $X_t=[\seff(\Lambda_t)]_+$ be the per-season realized selection (Section~\ref{sec:esh}) and write
+\[
+(1-\pi_{>})\,\bar s_{<} \;:=\; \mathbb E\!\big(X_t\big) \quad\text{with}\quad \pi_{>}=\Pr(\Lambda_t\ge \Lambda_c).
+\]
+Fix a required log-odds shift $L>0$ for the focal change (e.g.\ from $p_0$ to $p^\star$ requires $L=\log\!\frac{p^\star/(1-p^\star)}{p_0/(1-p_0)}$). Under standard mixing conditions,
+the \emph{correction time} satisfies the high-probability bound
+\[
+T_{\mathrm{corr}} \;\gtrsim\; \frac{L}{(1-\pi_{>})\,\bar s_{<}}.
+\]
+Let $N_t$ denote population size with per-season log growth $G_t=\log(N_{t+1}/N_t)$, and suppose $\mathbb E(G_t)=g<0$ with light-tailed fluctuations. Then the \emph{failure time} to a quasi-extinction threshold $K$ satisfies
+\[
+T_{\mathrm{fail}} \;\approx\; \frac{\log(K/N_0)}{|g|} \quad\text{(typical)},\qquad
+\Pr(T_{\mathrm{fail}}>t)\;\approx\; e^{-\theta_\star t}\ \text{for some }\theta_\star>0.
+\]
+Consequently, \emph{rescue occurs with high probability} whenever
+\begin{equation}\label{eq:rescue-ineq}
+\frac{L}{(1-\pi_{>})\,\bar s_{<}} \;<\; \frac{\log(K/N_0)}{|g|}\,,
+\end{equation}
+i.e.\ the correction clock outruns the failure clock. In the constant/immediate-benefit limit ($\pi_{>}=0$, $b(\tau)=s\,\delta_0(\tau)$), \eqref{eq:rescue-ineq} reduces to the standard rescue threshold.
+\end{lemma}
+
+\begin{proof}[Proof sketch]
+By definition $X_t=[\seff(\Lambda_t)]_+$ is bounded with $0\le X_t\le M$,
+and depends on $\Lambda_t$ only through whether the block is within horizon ($\Lambda_t<\Lambda_c$) and the value of $\seff$ there.
+
+Under $\alpha$-mixing with $\sum_{k\ge1}\alpha(k)^{\delta/(2+\delta)}<\infty$ for some $\delta>0$, Bernstein-type inequalities yield
+\[
+\Pr\!\left(\left|\frac{S_n}{n}-(1-\pi_{>})\bar s_{<}\right|>\epsilon\right)\;\le\; 2\exp\!\Big(-c_\star n\epsilon^2\Big),
+\]
+for a constant $c_\star>0$ depending on the mixing rate and bound $M$. For the failure time, standard random-walk/branching-process approximations with negative drift $g$ give $T_{\mathrm{fail}}\approx \log(K/N_0)/|g|$ typically, with exponential (or stretched-exponential under rare-region structure) tails; see Section~\ref{sec:block-hazard} for the intuition. Combining the two bounds gives \eqref{eq:rescue-ineq}.
+
+
+\end{proof}
+
+\begin{remark}[Recovery of the classical rescue threshold]
+In the constant/immediate-payoff limit, $\pi_{>}=0$ and $\bar s_{<}=s-(c+\kappa/\Ne)=:s_{\mathrm{eff}}$. Suppose rescue requires raising mean log growth from $g<0$ to nonnegative by increasing the frequency of a genotype with per-capita benefit $s_{\mathrm{eff}}$. Let $p^\star$ be the minimal frequency such that $g+p^\star s_{\mathrm{eff}}\ge 0$, so $p^\star=|g|/s_{\mathrm{eff}}$ (capped in $[0,1]$).
+The required log-odds shift is $L=\log\!\frac{p^\star/(1-p^\star)}{p_0/(1-p_0)}$. Plugging $T_{\mathrm{corr}}=L/s_{\mathrm{eff}}$ and $T_{\mathrm{fail}}=\log(K/N_0)/|g|$ into \eqref{eq:rescue-ineq} yields
+\[
+\frac{L}{s_{\mathrm{eff}}} \;<\; \frac{\log(K/N_0)}{|g|}\,.
+\]
+For small initial $p_0$ and moderate $K/N_0$, this reduces to the familiar condition $s_{\mathrm{eff}}>|g|$ (the net selective advantage must exceed the demographic decline rate), i.e.\ the classic rescue threshold. Thus the ESH/mixing argument collapses to the standard result in the appropriate limit.
+\end{remark}
+%% end unification kit
+
+\section{Minimax details and robust inequality}
+\label{sec:minimax-details}
+
+\paragraph{Why minimax (epistemic conservatism).}
+We do not assume the environment is “out to get” the lineage. We only assume that in the general case, we do not know the true hazard law. Averages with 
+variance are useful only when the law is stable and correctly specified; in many real systems hazards drift across regimes, exhibit fat tails, and synchronize 
+across space or time. Under those conditions, optimizing an average can understate the impact of the very episodes that dominate survival. The minimax 
+comparison is therefore a conservative backstop: we certify that sex still wins under the worst admissible lag-scale hazards consistent with the data. This 
+avoids model-misspecification surprises and makes the result monotone—if sex clears the boundary at the edge of the uncertainty set, it clears it for all 
+milder scenarios inside it. If a stable, well-characterized hazard model is available, the same boundary admits a mean-case reading: simply replace the 
+worst-case lag-scale hazard with an empirical estimate (or a risk-sensitive average) and re-evaluate. In short, our use of minimax is an epistemic safety 
+margin; the mean-case variant is a drop-in whenever its assumptions are credible.
+
+We recall the per–$T_S$-block value function from~\eqref{eq:minimax},
+\[
+\mathcal V(\mathbf u,\hazT{T}) \;=\;
+B\!\left(e^{-(\hazT{T}-U(\mathbf u))\,T_S}-e^{-\hazT{T}\,T_A}\right)\;-\;\Delta c(\mathbf u),
+\]
+with $\mathbf u\in\Uset$ (control), $\hazT{T}\in\Hset$ (uncertainty), $T_S>T_A$, and $B>0$.
+We assume throughout: (A) $\Uset$ is nonempty, compact, convex; (B) $\Hset$ is nonempty, compact, convex;
+(C) $U:\Uset\!\to\!\mathbb R_+$ is linear (additive targeting) or scalar $u\in[0,u_{\max})$ (fractional);
+(D) $\Delta c:\Uset\!\to\!\mathbb R_+$ is convex, continuous. We write $\Lmax:=\sup_{\hazT{T}\in\Hset}\hazT{T}$.
+
+\begin{proposition}[Saddle existence in the small-control regime]\label{prop:sion}
+Define the first-order (small-control) linearization
+\[
+\mathcal V_{\mathrm{lin}}(\mathbf u,\hazT{T})
+\;=\; B\,e^{-\hazT{T}T_S}\,T_S\,U(\mathbf u)\;-\;\Delta c(\mathbf u)\;+\;B\!\left(e^{-\hazT{T}T_S}-e^{-\hazT{T}T_A}\right).
+\]
+For fixed $\hazT{T}$, the map $\mathbf u\mapsto \mathcal V_{\mathrm{lin}}(\mathbf u,\hazT{T})$ is concave
+(linear gain minus convex cost). For fixed $\mathbf u$, the map $\hazT{T}\mapsto \mathcal V_{\mathrm{lin}}(\mathbf u,\hazT{T})$
+is convex on $\Hset$ when restricted to the part depending on $\mathbf u$, namely
+$B\,e^{-\hazT{T}T_S}T_S U(\mathbf u)$; the $\mathbf u$-independent term
+$B\!\big(e^{-\hazT{T}T_S}-e^{-\hazT{T}T_A}\big)$ does not affect the maximizer in $\mathbf u$.
+Hence Sion’s minimax theorem applies to the $\mathbf u$-dependent part, yielding
+\[
+\sup_{\mathbf u\in\Uset}\inf_{\hazT{T}\in\Hset}
+\Big\{B\,e^{-\hazT{T}T_S}T_S U(\mathbf u)-\Delta c(\mathbf u)\Big\}
+\;=\;
+\inf_{\hazT{T}\in\Hset}\sup_{\mathbf u\in\Uset}
+\Big\{B\,e^{-\hazT{T}T_S}T_S U(\mathbf u)-\Delta c(\mathbf u)\Big\}.
+\]
+Consequently, best-response dynamics on the linearized game admit a saddle.
+\end{proposition}
+
+\begin{remark}[Why linearization is used]
+The exact map $\mathbf u\mapsto \mathcal V(\mathbf u,\hazT{T})$ is convex (via $e^{U T_S}$) rather than concave,
+so Sion’s theorem does not apply directly to the full objective when maximizing over $\mathbf u$.
+The linearization captures the correct \emph{first-order} leverage of control (which drives targeting and
+the robust boundary) while preserving concave–convex structure.
+\end{remark}
+
+We now derive a sufficient, robust sex-wins condition by comparing against the adversary’s worst lag-scale hazard.
+
+\begin{lemma}[Monotonicity of the required cut in hazard]\label{lem:mono}
+For fixed $T_S>T_A$, $B>0$, and $\Delta c\ge 0$, define the additive-cut threshold
+\[
+U_\star(\Lambda) \;:=\; \frac{\Lambda\,(T_S-T_A)}{T_S} \;+\;
+\frac{1}{T_S}\,\log\!\Big(1+\frac{\Delta c}{B}\,e^{\Lambda T_A}\Big).
+\]
+Then $U_\star(\Lambda)$ is strictly increasing in $\Lambda\ge 0$.
+Similarly, for the fractional control case define
+\[
+u_\star(\Lambda) \;:=\; 1-\frac{1}{r} \;+\; \frac{1}{\Lambda T_S}\,\log\!\Big(1+\frac{\Delta c}{B}\,e^{\Lambda T_A}\Big),
+\qquad r=\frac{T_S}{T_A}>1,
+\]
+which is strictly increasing in $\Lambda>0$.
+\end{lemma}
+
+\begin{proof}
+Differentiate:
+\[
+\frac{d U_\star}{d\Lambda}
+= \frac{T_S-T_A}{T_S} + \frac{1}{T_S}\cdot \frac{(\Delta c/B)\,T_A\,e^{\Lambda T_A}}{1+(\Delta c/B)\,e^{\Lambda T_A}}
+\;>\; 0.
+\]
+For $u_\star$, use the same derivative applied to the logarithmic term and note $\partial(1/(\Lambda T_S))/\partial\Lambda<0$ while the bracket is positive; a direct calculation gives $du_\star/d\Lambda>0$ for $\Lambda>0$.
+\end{proof}
+
+\begin{theorem}[Robust sex-wins inequality: additive control]\label{thm:robust-add}
+Suppose the environment can choose any $\hazT{T}\in\Hset$ and let $\Lmax=\sup\Hset$.
+If there exists $U\in[0,U_{\max}]$ such that
+\begin{equation}\label{eq:robust-U-final}
+B\!\left(e^{-(\Lmax-U)T_S}-e^{-\Lmax T_A}\right) \;>\; \Delta c,
+\end{equation}
+then $\inf_{\hazT{T}\in\Hset}\sup_{\mathbf u\in\Uset} \mathcal V(\mathbf u,\hazT{T})>0$, i.e.\ sex wins robustly.
+Equivalently, a sufficient condition is
+\[
+U \;>\; U_\star(\Lmax)
+\;=\; \frac{\Lmax\,(T_S-T_A)}{T_S} \;+\; \frac{1}{T_S}\,\log\!\Big(1+\frac{\Delta c}{B}\,e^{\Lmax T_A}\Big).
+\]
+\end{theorem}
+
+\begin{proof}
+For any $\Lambda\in\Hset$, $\Lambda\le \Lmax$ and $U_\star(\Lambda)\le U_\star(\Lmax)$ by Lemma~\ref{lem:mono}.
+Thus if~\eqref{eq:robust-U-final} holds at $\Lmax$, it holds \emph{a fortiori} for all $\Lambda\in\Hset$,
+and the block-wise sexual advantage is strictly positive everywhere in $\Hset$.
+\end{proof}
+
+\paragraph{Computational tractability.}
+In the small-control regime, the sexual advantage is linear in control at weights
+$w_j=B_j T_j e^{-\Lambda^{(T_j)}T_j}$; with concave per-trait response $U_j(\cdot)$, the allocation
+$\max_{\sum u_j\le U_{\max}}\sum_j G_j(u_j)$ is a convex program (polynomial-time solvable).
+In bucketed form (trait–phase cells), the ESH gain is typically monotone submodular; greedy selection achieves a
+$(1-1/e)$ approximation (Nemhauser–Wolsey–Fisher). Thus the portfolio version of our boundary is not only conceptual
+but algorithmically simple: either convex or near-optimal greedy.
+
+\paragraph{Robust optimization lens.}
+Under mean–covariance uncertainty for block hazards across traits, the worst-case adversarial penalty scales like a Mahalanobis norm,
+\(\sup_{\delta^\top \Sigma^{-1}\delta\le \rho^2} w^\top \delta = \rho\,\|\Sigma^{1/2}w\|_2\),
+whereas sexual leverage in the small-control regime accumulates additively, \(\propto \|w\|_1\).
+This \(\ell_2\)–vs–\(\ell_1\) asymmetry yields diversification: with homogeneous or bounded-heterogeneity weights across
+\(m_{\mathrm{eff}}\) effective traits, the robust portfolio margin grows \emph{linearly} in \(m_{\mathrm{eff}}\) (after a constant threshold),
+while the adversary’s worst-case penalty grows only like \(\sqrt{m_{\mathrm{eff}}}\).
+In general, the margin lies between \(O(1)\) (highly concentrated weights) and \(O(m_{\mathrm{eff}})\),
+providing a structural reason multi-trait co-optimization tilts the minimax toward sex.
+
+\begin{remark}[Algorithmic meta-structure]
+Three structural facts align the theory with efficient computation:
+(i) the free-energy form makes $\hazT{T}$ convex in hazard distributions (good for robustness),
+(ii) the control problem is convex/submodular in natural regimes (good for algorithms),
+(iii) multi-trait robustness scales as $\|w\|_1$ vs.\ an adversary’s $\|w\|_2$ (good for portfolios).
+Together they explain why an “adversarial” environment can, paradoxically, enlarge the region where sex prevails.
+\end{remark}
+
+\begin{theorem}[Robust sex-wins inequality: fractional control]\label{thm:robust-frac}
+If buffering rescales hazards multiplicatively, $\hazT{T}\mapsto(1-u)\hazT{T}$ with $u\in[0,u_{\max})$, then a sufficient robust condition is
+\begin{equation}\label{eq:robust-u-final}
+B\!\left(e^{-(1-u)\Lmax T_S}-e^{-\Lmax T_A}\right) \;>\; \Delta c,
+\end{equation}
+equivalently
+\[
+u \;>\; u_\star(\Lmax)
+\;=\; 1-\frac{1}{r} \;+\; \frac{1}{\Lmax T_S}\,\log\!\Big(1+\frac{\Delta c}{B}\,e^{\Lmax T_A}\Big).
+\]
+In the costless case $\Delta c=0$, this reduces to the baseline boundary $u>1-1/r$.
+\end{theorem}
+
+\begin{proof}
+Rearrange~\eqref{eq:robust-u-final}:
+$-(1-u)\Lmax T_S > \log\!\big(e^{-\Lmax T_A}+\Delta c/B\big)$, giving the stated $u_\star(\Lmax)$.
+Monotonicity in $\Lambda$ follows from Lemma~\ref{lem:mono}.
+\end{proof}
+
+\begin{corollary}[Small-control consistency]
+For small additive $U$ with cost $\Delta c=o(1)$,
+\[
+U_\star(\Lmax) \;=\; \frac{\Lmax(T_S-T_A)}{T_S} \;+\; \frac{1}{T_S}\,\frac{\Delta c}{B}\,e^{\Lmax T_A} \;+\; O(\Lmax^2,\Delta c^2),
+\]
+matching the first-order saddle analysis (Section~\ref{sec:minimax}) and confirming consistency.
+\end{corollary}
+
+\begin{proposition}[Diversification under ellipsoidal uncertainty]\label{prop:diversification}
+Let $w\in\mathbb{R}^m_+$ be per-trait ESH weights and let the adversary choose $\delta$ in the ellipsoid
+$\{\delta:\ \delta^\top \Sigma^{-1}\delta\le \rho^2\}$. In the small-control regime, the worst-case
+adversarial penalty is
+\[
+\sup_{\delta^\top \Sigma^{-1}\delta\le \rho^2} w^\top \delta \;=\; \rho\,\|\Sigma^{1/2}w\|_2.
+\]
+Suppose control is separable at first order across traits (micro-controls) with nonnegative allocations
+$u_i\ge 0$ and $\sum_i u_i\le U_{\max}$, yielding first-order gain $\sum_i w_i u_i$.
+Then for any feasible $(u_i)$,
+\[
+\text{margin} \;\gtrsim\; \sum_i w_i u_i \;-\; \rho\,\|\Sigma^{1/2}w\|_2
+\;\ge\; -\, \rho\,\|\Sigma^{1/2}\|_{\mathrm{op}}\,\|w\|_2,
+\]
+and, in particular, if micro-controls permit approximately uniform small allocations ($u_i\approx U_{\max}/m_{\mathrm{eff}}$ on $m_{\mathrm{eff}}$ effective traits) then
+\[
+\sum_i w_i u_i \;\approx\; \frac{U_{\max}}{m_{\mathrm{eff}}}\sum_{i\in S} w_i
+\quad\Longrightarrow\quad
+\text{margin} \;\gtrsim\; \frac{U_{\max}}{m_{\mathrm{eff}}}\|w\|_{1,S}
+\;-\;\rho\,\|\Sigma^{1/2}\|_{\mathrm{op}}\,\|w\|_2,
+\]
+where $S$ indexes the effective traits.
+\end{proposition}
+
+\begin{corollary}[Linear growth under bounded heterogeneity]\label{cor:sqrtm}
+If $w_i\in[c_{\min},c_{\max}]$ on $m_{\mathrm{eff}}$ traits and $U_{\max}$ scales linearly with $m_{\mathrm{eff}}$
+(via per-trait micro-controls of size $\asymp 1$), then
+\[
+\sum_i w_i u_i \;\asymp\; m_{\mathrm{eff}}
+\quad\text{while}\quad
+\rho\,\|\Sigma^{1/2}w\|_2 \;\lesssim\; \rho\,\|\Sigma^{1/2}\|_{\mathrm{op}}\sqrt{m_{\mathrm{eff}}},
+\]
+so the robust margin grows \emph{linearly} in $m_{\mathrm{eff}}$ beyond a constant threshold.
+For homogeneous weights $w_i=c$, this reduces to $mc - \rho\,\|\Sigma^{1/2}\|_{\mathrm{op}}\sqrt{m}$, i.e.\ $\Theta(m)$ growth once $m$ exceeds a constant.
+\end{corollary}
+
+\noindent\emph{Proof sketch.}
+The ellipsoidal dual norm gives $\sup_\delta w^\top\delta=\rho\,\|\Sigma^{1/2}w\|_2$.
+Small-control separability yields linear gain $\sum w_i u_i$; with approximately uniform micro-allocations across
+$m_{\mathrm{eff}}$ traits the gain is proportional to $\|w\|_1$, whereas the penalty scales as an $\ell_2$ norm.
+The stated bounds follow by $\|w\|_2\le \|w\|_1/\sqrt{m_{\mathrm{eff}}}$ and operator-norm control of $\Sigma^{1/2}$.\qed
+
+\begin{remark}[Feasibility and benign/hazard limits]
+Physical feasibility may impose $0\le U\le \min\{U_{\max},\Lmax\}$.
+As $\Lmax\downarrow 0$ (benign environments), $U_\star(\Lmax)\to \tfrac{1}{T_S}\log(1+\Delta c/B)$,
+so without near-zero cost the robust condition cannot be met; the K\&K tempo ordering re-emerges.
+As $\Lmax\uparrow\infty$, both $U_\star(\Lmax)$ and $u_\star(\Lmax)$ grow, reflecting that excessive hazard swamps selection.
+\end{remark}
+
+\section{Doob--Meyer view: ESH as benefit against the compensator}
+\label{sec:doob-meyer}
+
+\paragraph{Why bring in Doob--Meyer?}
+Up to now we treated survival weights heuristically: benefits realized at delay $t$ are downweighted by the chance the lineage is still eligible. The Doob--Meyer decomposition provides the canonical, model-free way to formalize that idea. Any failure process $N_t$ with a predictable (possibly time-varying, environment-dependent) hazard admits a unique split into a \emph{predictable} compensator $A_t$ and a \emph{surprise} martingale $M_t$. The eligible fraction $S_t=1-N_t$ then evolves as a deterministic drift term $-\lambda_t S_t\,dt$ plus a martingale noise $-dM_t$. When we take expectations, the noise vanishes and only the predictable survival remains. ESH is nothing more (and nothing less) than integrating the payoff profile against this predictable survival. That is why the “Laplace tilt” appears inevitably and why hazards add in the exponent.
+
+\paragraph{Why it matters for our argument.}
+This viewpoint buys four useful things. (i) \emph{Generality:} the survival identity does not assume stationarity or independence—only a predictable intensity—so ESH is grounded in standard counting-process theory. (ii) \emph{Additivity:} with competing risks, intensities add inside the compensator, yielding the “sum of hazards in the exponent” used throughout (mating, ecology, disturbance). (iii) \emph{Intervention targets:} control (buffering) acts on the compensator, not the martingale; optimal policies therefore “trim” the predictable high-hazard phases (our FK-weighting rule), while unpredictable shocks average out in expectation. (iv) \emph{Scale-matching:} coarse-graining the compensator over a benefit lag $T$ leads directly to the block hazard $\hazT{T}$ and its cumulant (RG) corrections, and in Markov settings reduces to the familiar killed-semigroup/Feynman–Kac form. In short, Doob--Meyer is the backbone that makes the ESH lens inevitable, additive, and actionable.
+
+\paragraph{Set-up and assumptions.}
+Work on a filtered probability space $(\Omega,\mathcal F,(\mathcal F_t)_{t\ge0},\mathbb P)$.
+Let $\tau^\dagger$ be a (possibly environment–dependent) failure time with counting process
+$N_t:=\mathbf 1\{\tau^\dagger\le t\}$ and at-risk indicator $Y_t:=1-N_{t-}$ (predictable, left-continuous).
+Assume an Aalen multiplicative intensity model:
+\[
+\text{(DM1)}\qquad \text{$N$ has $\mathcal F_t$–intensity $\;Y_t\,\lambda_t$, with \emph{predictable} $\lambda_t\ge 0$ and } \ \E\!\int_0^T \lambda_t\,dt<\infty \text{ for all $T$.}
+\]
+Then Doob--Meyer gives the decomposition $N_t=M_t+A_t$ with $M_t$ a martingale and compensator
+$A_t=\int_0^t Y_s\,\lambda_s\,ds$. Define the survival (eligibility) process $S_t:=1-N_t$.
+
+\paragraph{Survival identity via integration by parts (the clean proof).}
+Since $dS_t=-dN_t=-\,Y_t\lambda_t\,dt-dM_t$ and $H_t:=\int_0^t \lambda_s\,ds$ has finite variation,
+the product rule for semimartingales yields
+\[
+d\big(e^{H_t}S_t\big) \;=\; e^{H_t}\,dS_t \;+\; S_{t-}\,d(e^{H_t}) \;=\; -\,e^{H_t}\,dM_t,
+\]
+because $d(e^{H_t})=e^{H_t}\lambda_t\,dt$ and the $dt$ terms cancel: $e^{H_t}(-Y_t\lambda_t\,dt)+S_{t-}\,e^{H_t}\lambda_t\,dt=0$
+(using $Y_t=S_{t-}$). Hence $\;e^{H_t}S_t=e^{H_0}S_0-\int_0^t e^{H_s}\,dM_s\;$ is a martingale with mean $S_0=1$.
+Taking expectations,
+\[
+\E[S_t]\;=\;\E\!\left[e^{-H_t}\right] \;=\;\E\!\left[\exp\!\Big(-\int_0^t \lambda_s\,ds\Big)\right].
+\tag{DM}
+\label{eq:DM-survival}
+\]
+This proves rigorously the survival weight used in ESH.
+
+\paragraph{ESH as benefit against predictable survival.}
+For any nonnegative, integrable payoff profile $b\in L^1([0,\infty))$ earned only while eligible,
+the realized benefit is the optional integral $\int_0^\infty b(t)\,S_t\,dt$.
+Fubini/Tonelli and~\eqref{eq:DM-survival} give
+\[
+\E\!\left[\int_0^\infty b(t)\,S_t\,dt\right] \;=\; \int_0^\infty b(t)\,\E[S_t]\,dt
+\;=\; \int_0^\infty b(t)\,\E\!\left[e^{-\int_0^t \lambda_s ds}\right] dt,
+\]
+which is exactly the ESH backbone: a Laplace‑type tilt of $b$ by the predictable survival.
+
+\paragraph{Single‑lag and random completion times.}
+If payoff arrives at a deterministic lag $T$, take $b(t)=B\,\delta(t-T)$ to get
+$\E[B\,S_T]=B\,\E[\exp(-\int_0^{T}\lambda_s ds)]$.
+If completion time $\tau_c$ is random with density $f(t)$ and independent of failure given the environment,
+$b(t)=B f(t)$ recovers $\E[B\,\mathbf 1\{\tau_c<\tau^\dagger\}]=\int B f(t)\,\E[S_t]\,dt$.
+
+\paragraph{Competing risks (why hazards add).}
+Let there be $K$ independent failure channels with intensities $Y_t\,\lambda_t^{(k)}$ (predictable) and
+counting processes $N^{(k)}$. Then $N:=\sum_k N^{(k)}$ has compensator
+$A_t=\int_0^t Y_s\big(\sum_k \lambda_s^{(k)}\big)ds$, so~\eqref{eq:DM-survival} becomes
+\[
+\E[S_t] \;=\; \E\!\left[\exp\!\Big(-\int_0^t \sum_{k=1}^K \lambda_s^{(k)}\,ds\Big)\right],
+\]
+i.e.\ hazards add in the exponent, as used throughout (mating, ecology, disturbance, etc.).
+
+\paragraph{Block hazards and coarse-graining.}
+For a trait with benefit lag $T$, define the \emph{block hazard}
+\[
+\hazT{T} \;:=\; -\frac{1}{T}\log \E\!\left[\exp\!\Big(-\int_0^T \lambda_s\,ds\Big)\right],
+\]
+so that $\E[S_t]\approx e^{-\hazT{T} t}$ for $t$ in the vicinity of $T$ (exact at $t=T$).
+The ESH tilt is then $\widehat b(\hazT{T})=\int_0^\infty e^{-\hazT{T} t}b(t)\,dt$,
+justifying the block‑level substitution used in the main text.
+
+\paragraph{FK/Markovian specialization (killed semigroups).}
+If $\lambda_t=V(X_t)$ for a Markov environment $X_t$ with generator $\mathcal L$, then
+$u(t,x):=\E_x[\exp(-\int_0^t V(X_s)ds)]$ solves the backward FK equation $\partial_t u=\mathcal L u - V u$, $u(0,\cdot)=1$.
+For a payoff $b$, the ESH contribution $F(\Lambda)=\int_0^\infty b(t)\,u(t,\cdot)\,dt$ is the Laplace transform
+of the killed semigroup, matching the physics “free energy” reading of Section~\ref{sec:related}.
+
+\paragraph{Discrete time (for completeness).}
+With discrete seasons and per‑season hazards $\lambda_k\in[0,1]$, the survival is
+$S_n=\prod_{k=1}^n (1-\lambda_k)$, so $\E[S_n]=\E[\prod_{k\le n}(1-\lambda_k)]$.
+For small hazards $\lambda_k=\Lambda_k\Delta t+o(\Delta t)$,
+$\log \E[S_n]\approx -\E[\sum_k \Lambda_k \Delta t] + \tfrac12\Var(\sum_k\Lambda_k\Delta t)+\cdots$,
+recovering the variance bonus and the continuous‑time limit $e^{-\int \Lambda}$.
+
+\paragraph{Scope and caveats.}
+The identity~\eqref{eq:DM-survival} uses only (DM1): predictability of $\lambda$ and integrability; it does \emph{not} require independence across time. If $\lambda_t$ feeds back on genotype frequencies (endogenous hazards) or is actively controlled (buffering), the same derivation holds conditional on the chosen control path (replace $\lambda$ by $\lambda(\cdot;\mathbf u)$). Heavy tails and nonstationarity do not invalidate Doob--Meyer, but they can complicate the coarse‑graining step (the replacement $\E[S_t]\approx e^{-\hazT{T} t}$), as discussed in Section~\ref{sec:block-hazard}.
+
+% optimal-reservoir
+\section{Optimal neutral reservoir for hazard shaping}
+\label{sec:optimal-reservoir}
+
+\subsection{Single-trait model (small-control ESH regime)}
+\paragraph{Set-up.}
+Fix a trait with benefit lag $T$ and block hazard $\hazT{T}$.
+Let $R\ge 0$ index the amount of nominally neutral material (a reservoir of cryptic variants).
+Assume:
+(i) reservoir $\to$ usable hazard relief via a concave, increasing map $U:[0,\infty)\!\to\![0,\bar u]$ with $U(0)=0$, $U'>0$, $U''\le 0$;
+(ii) maintenance/replication/mutational/TE costs via a convex, increasing $C:[0,\infty)\!\to\![0,\infty)$ with $C(0)=0$, $C'\!\ge\!0$, $C''\!\ge\!0$;
+(iii) small-control ESH gain per unit hazard cut is
+\[
+L:=B\,T\,e^{-\hazT{T}T},
+\]
+the first-order factor in Section~\ref{sec:minimax}. The per-season objective is
+\[
+J(R)\;=\; L\,U(R)\;-\;C(R).
+\]
+
+\paragraph{Existence, uniqueness, and FOC.}
+If $L\,U'(0)\le C'(0)$, then $R^\star=0$.
+If $L\,U'(0)>C'(0)$ and $U'$ is continuous, strict concavity of $L\,U$ and convexity of $C$ give a unique $R^\star\!>\!0$ solving
+\begin{equation}\label{eq:FOC-single}
+L\,U'(R^\star) \;=\; C'(R^\star).
+\end{equation}
+By the implicit function theorem,
+\[
+\frac{\partial R^\star}{\partial L}\;=\;\frac{U'(R^\star)}{C''(R^\star)-L\,U''(R^\star)}\;>\;0,\qquad
+\frac{\partial R^\star}{\partial \hazT{T}}\;=\;\frac{\partial R^\star}{\partial L}\,\frac{\partial L}{\partial \hazT{T}}\;<\;0,
+\]
+so harsher hazards (smaller $L$) shrink the optimal reservoir.
+
+\paragraph{Closed form (exponential $U$, linear cost).}
+If $U(R)=\bar u(1-e^{-\eta R})$ and $C(R)=c\,R$,
+\[
+R^\star \;=\; \frac{1}{\eta}\,\log\!\Big(\tfrac{L\,\bar u\,\eta}{c}\Big)_{+},
+\]
+where $(x)_{+}:=\max\{x,0\}$. The positivity condition $L\,\bar u\,\eta>c$ is interpretable: the initial marginal return of the reservoir must exceed its marginal cost.
+
+\paragraph{Lag positioning.}
+For fixed $\hazT{T}$, write $f(T):=T e^{-\hazT{T}T}$. Then $f'(T)=e^{-\hazT{T}T}\!\left(1-\hazT{T}T\right)$, so the leverage $L$ is maximized at $T^\star=1/\hazT{T}$. Reservoirs are most valuable when the trait’s lag sits near $1/\hazT{T}$.
+
+\subsection{Adjacency to CGV, mutational-hazard drift, and TEs}
+\paragraph{CGV and robustness.}
+Cryptic genetic variation (Hsp90 capacitance; robustness) increases the effective \emph{conversion efficiency} of reservoir into usable variance: larger $\bar u$ or steeper $\eta$. In~\eqref{eq:FOC-single}, this raises $R^\star$ without asserting that the bulk of the genome is selected for “reservoir” per se.
+
+\paragraph{Mutational-hazard drift (MHD).}
+The mainstream view (small $\Ne$ $\Rightarrow$ weak purifying selection $\Rightarrow$ larger genomes) sets a \emph{baseline} genome size. Our model adds a \emph{marginal} selection on a \emph{useful neutral reservoir} layered atop that baseline. When $L\,\bar u\,\eta\le c$, the optimum reverts to $R^\star=0$ even if genomes are large by drift.
+
+\paragraph{Transposable elements (TEs) and sex.}
+TEs affect $C$ (replication, ectopic recombination, mutation load) and, via recombination/repair, can alter $\eta$ (how efficiently latent diversity becomes usable). Sex can either inflate $C$ (ectopic costs) or lower it (purging, recombination load relief); our $C(R)$ lumps these lineage-specific effects. The complementarity: TE/MHD set costs and baselines; ESH selects the \emph{useful} reservoir margin.
+
+\subsection{Multi-trait portfolios}
+\paragraph{Separable convex program.}
+For traits $j=1,\dots,m$ with lags $T_j$, hazards $\Lambda^{(T_j)}$, and per-unit gains $L_j=B_j T_j e^{-\Lambda^{(T_j)}T_j}$, choose $R_j\ge 0$ to maximize
+\begin{equation}\label{eq:portfolio}
+\max_{\{R_j\}}\;\sum_{j=1}^m \big[L_j U_j(R_j)-C_j(R_j)\big]
+\quad\text{s.t.}\quad \sum_{j=1}^m R_j \le R_{\mathrm{tot}}.
+\end{equation}
+With $U_j$ concave and $C_j$ convex, \eqref{eq:portfolio} is a convex program. KKT conditions yield
+\[
+L_j U_j'(R_j^\star)-C_j'(R_j^\star) \;=\; \lambda^\star \quad\text{(common shadow price)},\qquad
+\lambda^\star\!\left(\sum_{j=1}^m R_j^\star-R_{\mathrm{tot}}\right)=0,\ \ \lambda^\star\ge 0.
+\]
+Thus allocation is “water-filling”: spend reservoir where marginal ESH return $L_j U_j'-C_j'$ is largest until equalized.
+
+\paragraph{Cardinal comparability and convexity.}
+The portfolio rule equalizes \emph{marginal} cardinal returns ($L_j U'_j - C'_j=\lambda^{\star}$).
+This convex/submodular structure is the price of consistency: with only ordinal trait rankings
+and no curvature assumptions, Arrow-style aggregation issues reappear and no single global ranking
+is guaranteed.
+
+\paragraph{Discrete bucketed control.}
+If reservoir is deployed over trait–phase \emph{buckets} with diminishing returns per bucket, the total ESH gain $F(S)$ over a chosen set $S$ is typically monotone submodular. Greedy selection attains $(1-1/e)$ of optimum (Nemhauser–Wolsey–Fisher), making the portfolio \emph{algorithmically} simple.
+
+\subsection{Sex vs.\ asex under a shared hazard profile}
+\paragraph{Mode-specific parameters.}
+Let $m\in\{\mathrm{sex},\mathrm{asex}\}$. For each mode, specify lag $T_m$, conversion $U_m(R)=\bar u_m(1-e^{-\eta_m R})$ (or any concave map), and cost $C_m(R)=c_m R$ (or convex). Under the same $\hazT{T}$, the first-order leverage is $L(T_m,\hazT{T})=B\,T_m e^{-\hazT{T}T_m}$ and
+\[
+R^\star_m \;=\; \frac{1}{\eta_m}\,\log\!\Big(\tfrac{L(T_m,\hazT{T})\,\bar u_m\,\eta_m}{c_m}\Big)_{+}.
+\]
+
+\paragraph{Who stocks more?}
+Sex stockpiles more ($R^\star_{\mathrm{sex}}>R^\star_{\mathrm{asex}}$) whenever
+\[
+\frac{1}{\eta_{\mathrm{sex}}}\log\!\Big(\tfrac{L(T_{\mathrm{sex}},\hazT{T})\,\bar u_{\mathrm{sex}}\,\eta_{\mathrm{sex}}}{c_{\mathrm{sex}}}\Big)\;>\;
+\frac{1}{\eta_{\mathrm{asex}}}\log\!\Big(\tfrac{L(T_{\mathrm{asex}},\hazT{T})\,\bar u_{\mathrm{asex}}\,\eta_{\mathrm{asex}}}{c_{\mathrm{asex}}}\Big).
+\]
+A transparent sufficient condition (equal $\eta$ and $c$) is
+\[
+T_{\mathrm{sex}} e^{-\hazT{T}T_{\mathrm{sex}}}\,\bar u_{\mathrm{sex}}
+\;>\;
+T_{\mathrm{asex}} e^{-\hazT{T}T_{\mathrm{asex}}}\,\bar u_{\mathrm{asex}}.
+\]
+Because $T e^{-\hazT{T}T}$ peaks at $T^\star=1/\hazT{T}$, sex can win even with a larger lag if $T_{\mathrm{sex}}$ sits closer to $1/\hazT{T}$ or if its conversion efficiency $(\bar u_{\mathrm{sex}},\eta_{\mathrm{sex}})$ dominates and/or costs $c_{\mathrm{sex}}$ are lower.
+
+\paragraph{Phase sketch.}
+\begin{itemize}
+\item[$\square$] \emph{High hazard} (short horizon): $L\,\bar u\,\eta\le c$ for both $\Rightarrow R^\star=0$.
+\item[$\square$] \emph{Intermediate hazard}: the mode with larger $L\,\bar u\,\eta/c$ maintains the larger reservoir.
+\item[$\square$] \emph{Benign hazard} (long horizon): $L$ saturates; relative costs $c_m$ and concavity scales $\eta_m$ govern $R^\star_m$.
+\end{itemize}
+
+\paragraph{Interpretation.}
+This appendix complements genome-size accounts (MHD and TEs) by isolating conditions under which selection favors a \emph{useful} neutral reservoir for hazard shaping. It also clarifies when sexual lineages are predicted to maintain a larger such reservoir than asexual ones under the same hazard profile: when their lag aligns better with the horizon and/or when recombination/selection (and sexual selection) convert hidden variation into usable hazard relief more efficiently than clonal mechanisms, net of costs.
+
+% mut-bands
+\section{Optimal mutation bands under ESH}
+\label{app:mut-bands}
+
+\paragraph{Adjacencies.}
+Drift‐barrier arguments predict minimal mutation rates in large‐\(\Ne\) lineages where selection efficiently removes excess mutational load \citep{Lynch2010}. At the other extreme, mutator advantages in rapidly adapting microbes illustrate supply‐limited regimes \citep{Sniegowski2010}. The ESH analysis complements both: it identifies when intermediate hazards and effective conversion (often enhanced by sex) create a unique interior optimum \(U^\star\)---too low (adaptation‐limited) and too high (hazard‐dominated) are both suboptimal. It also aligns with classical optimality arguments for mutation modifiers \citep{Leigh1970} and with empirical regularities in per‐genome mutation rates across taxa \citep{Drake1998}, by making explicit the role of timing and hazard structure in setting the ``safe band'' for \(U\).
+
+\paragraph{Set-up and standing assumptions.}
+Let \(U\) denote the per‐genome mutation rate (per host season). Decompose the net effect of changing \(U\)
+near a reference \(U_0\) into: (i) a \emph{beneficial conversion} term \(\Phi(U)\) that captures the rate at which
+new variation is converted into realized hazard relief (via recombination/assembly and earlier payoff timing),
+and (ii) a \emph{mutational hazard} term \(\Lambda_{\mathrm{mut}}(U)\) plus any additional convex cost \(K(U)\)
+(e.g., TE activation, replication burden). Work at the trait’s lag \(T\), and write the first-order ESH leverage
+\(L:=B\,T\,e^{-\hazT{T}T}\) as in the main text. We assume
+\[
+\begin{alignedat}{4}
+&\Phi \in \mathcal C^2,        &\quad& \Phi' \ge 0,        &\quad& \Phi'' \le 0,        &\quad& \text{(concave conversion)},\\
+&\Lambda_{\mathrm{mut}} \in \mathcal C^2, &\quad& \Lambda'_{\mathrm{mut}} \ge 0, &\quad& \Lambda''_{\mathrm{mut}} \ge 0,\\
+&K \in \mathcal C^2,            &\quad& K' \ge 0,           &\quad& K'' \ge 0.
+\end{alignedat}
+\]
+
+Define the per-season objective (incremental realized selection around \(U_0\)):
+\begin{equation}
+J(U)\;:=\; L\,\Phi(U)\;-\;\big(\Lambda_{\mathrm{mut}}(U)+K(U)\big).
+\label{eq:J-U}
+\end{equation}
+
+\subsection{Local safety and interior optimum}
+\begin{lemma}[Local safety to raise \(U\)]
+\label{lem:safe-U}
+At \(U_0\), write \(\beta:=\Phi'(U_0)\) and \(a:=\Lambda'_{\mathrm{mut}}(U_0)+K'(U_0)\). Then
+\[
+\frac{d}{dU}J(U)\Big|_{U_0} \;=\; L\,\beta - a.
+\]
+It is locally safe (non-detrimental) to increase \(U\) iff \(L\,\beta\ge a\).
+\end{lemma}
+
+\begin{proposition}[Existence, uniqueness, and curvature]
+\label{prop:exist-uniq}
+If \(L\,\Phi'(0)\le \Lambda'_{\mathrm{mut}}(0)+K'(0)\), then every maximizer satisfies \(U^\star=0\).
+If \(L\,\Phi'(0)> \Lambda'_{\mathrm{mut}}(0)+K'(0)\), then \(J\) admits a unique interior maximizer \(U^\star>0\) whenever
+\[
+L\big(-\Phi''(U)\big)\;+\;\Lambda''_{\mathrm{mut}}(U)\;+\;K''(U)\;>\;0\quad\text{for all }U\ge 0,
+\]
+with first-order condition
+\begin{equation}
+L\,\Phi'\!\big(U^\star\big) \;=\; \Lambda'_{\mathrm{mut}}\!\big(U^\star\big)+K'\!\big(U^\star\big).
+\label{eq:FOC-U}
+\end{equation}
+\end{proposition}
+
+\begin{corollary}[Local closed form and comparative statics]
+\label{cor:local}
+Let \(\sigma:=-\Phi''(U_0)\ge 0\) and \(\kappa:=\Lambda''_{\mathrm{mut}}(U_0)+K''(U_0)\ge 0\).
+For perturbations around \(U_0\),
+\[
+U^\star-U_0 \;=\; \frac{L\,\Phi'(U_0)-\big(\Lambda'_{\mathrm{mut}}(U_0)+K'(U_0)\big)}{L\,\sigma+\kappa}\;+\;o(1).
+\]
+Hence \(U^\star\) increases with \(L\) and \(\Phi'\) (higher leverage or better conversion) and decreases with
+\(\Lambda'_{\mathrm{mut}}+K'\) (higher marginal mutational cost) and with curvature \(L\,\sigma+\kappa\) (earlier saturation).
+\end{corollary}
+
+\subsection{A band, not a corner: too low and too high are suboptimal}
+Define the \emph{marginal net effect} \(m(U):=L\,\Phi'(U)-\big(\Lambda'_{\mathrm{mut}}(U)+K'(U)\big)\).
+Under the curvature condition in Proposition~\ref{prop:exist-uniq}, \(m\) is strictly decreasing. If \(m(0)>0\) while
+\(\lim_{U\to\infty}m(U)<0\), there exists a unique \(U^\star\in(0,\infty)\) with \(m(U^\star)=0\);
+\(J'(U)>0\) on \((0,U^\star)\) and \(J'(U)<0\) on \((U^\star,\infty)\). In particular:
+\begin{itemize}
+\item[$\square$] \emph{Too low:} when \(U<U^\star\), the lineage is \emph{supply-limited} and benefits from a higher mutation rate;
+\item[$\square$] \emph{Too high:} when \(U>U^\star\), mutational hazards dominate and \(U\) should be reduced.
+\end{itemize}
+This formalizes a mutation ``band'' (around \(U^\star\)) as risk-optimal: both extremes are suboptimal.
+
+\subsection{Simple parametric example (closed form)}
+If \(\Phi(U)=\beta_m (U-U_0)-\tfrac12 \sigma_m (U-U_0)^2\) and
+\(\Lambda_{\mathrm{mut}}(U)+K(U)= a_m (U-U_0)+\tfrac12 \kappa_m (U-U_0)^2\) near \(U_0\), then
+\begin{equation}
+U^\star-U_0 \;=\; \frac{L\,\beta_m - a_m}{L\,\sigma_m + \kappa_m}\,,
+\qquad\text{and}\qquad
+\text{``safe to raise \(U\)'' }\Longleftrightarrow\ L\,\beta_m \ge a_m.
+\label{eq:Ustar-local}
+\end{equation}
+This captures ``larger safe bands'' for modes with higher conversion efficiency (\(\beta_m\)) and lower marginal mutational
+hazards (\(a_m\)), and the shrinkage of \(U^\star\) in harsher environments (smaller \(L\)).
+
+\subsection{Mode comparison and multi-trait extension}
+For mode \(m\in\{\mathrm{sex},\mathrm{asex}\}\) with 
+parameters \((\Phi_m,\Lambda_{\mathrm{mut},m},K_m)\) and lag \(T_m\), let 
+\[L_m := B\,T_m e^{-\Lambda^{(T_m)} T_m}
+\]
+Under the curvature condition, each mode admits a unique \(U^\star_m\).
+In the quadratic-local form~\eqref{eq:Ustar-local}, a larger
+\[
+\frac{L_m\,\beta_m - a_m}{L_m\,\sigma_m+\kappa_m}
+\]
+raises \(U^\star_m\). Sexual lineages can have higher \(U^\star_{\mathrm{sex}}\) when their conversion is more effective
+(e.g., recombination/sexual selection front-load benefits, larger \(\beta_{\mathrm{sex}}\)) and/or their mutational hazard
+is better controlled (smaller \(a_{\mathrm{sex}}\)), net of curvature. With multiple traits \(j\), the same analysis applies
+componentwise with \(L=\sum_j L_j\) (or bucketed with a submodular gain), preserving uniqueness and water-filling
+allocation across traits.
+
+\subsection{Information-theoretic reading}
+In the Donsker--Varadhan/Gibbs view (Appendix~\ref{sec:optimal-reservoir}), let a reservoir or mechanism that scales with \(U\) buy an information budget
+\(I(U)\) (bits per block) to reweight hazards \(P\mapsto Q\) with \(D_{\mathrm{KL}}(Q\Vert P)\le I(U)\). If \(V(U)\) denotes the
+best achievable expected cumulative hazard under that budget, the envelope theorem gives \(V'(U)=-\lambda^{\star}(U)\,I'(U)\),
+where \(\lambda^{\star}\) is the \emph{shadow price of information}. For a smooth conversion \(\Phi=\chi\!\big(V(0)-V\big)\),
+the FOC~\eqref{eq:FOC-U} becomes
+\[
+L\,\chi'\!\big(V(0)-V(U^\star)\big)\,\lambda^{\star}\!\big(U^\star\big)\,I'\!\big(U^\star\big)
+=\;
+\Lambda'_{\mathrm{mut}}\!\big(U^\star\big)+K'\!\big(U^\star\big).
+\]
+i.e., \emph{(marginal ESH gain)}\(\times\)\emph{(value of a bit)}\(\times\)\emph{(bits per unit \(U\))} equals the marginal hazard cost.
+This clarifies how harder environments (larger \(\lambda^{\star}\)) widen the optimal band and why better ``information conversion''
+(higher \(I'(U)\) through recombination/assembly) raises \(U^\star\).
+
+% === Bibliography placeholder ===
+\bibliographystyle{plainnat}
+\bibliography{WhereSexWins}
+
+\end{document}
