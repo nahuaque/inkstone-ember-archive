@@ -16,6 +16,8 @@
 \usepackage[hidelinks]{hyperref}
 \usepackage[numbers,sort&compress]{natbib}
 \usepackage{enumitem}
+\usepackage{xstring}
+\usepackage{catchfile}
 \setlist{nosep}
 
 \emergencystretch=2em
@@ -67,6 +69,21 @@
 \newcommand{\lam}{\lambda}                      % per-season instantaneous
 
 \renewcommand{\Lmax}{\Lambda_{\max}}
+
+% Set user input
+\newcommand{\gitfolder}{../../.git}             % Relative path to .git folder from .tex file
+
+% Based on this https://tex.stackexchange.com/questions/455396/how-to-include-the-current-git-commit-id-and-branch-in-my-document
+\CatchFileDef{\headfull}{\gitfolder/HEAD}{}              % Get path to head file for checked out branch
+\StrGobbleRight{\headfull}{1}[\head]                      % Remove end of line character
+\StrBehind[2]{\head}{/}[\branch]                          % Parse out the path only
+\CatchFileDef{\commit}{\gitfolder/refs/heads/\branch}{}  % Get the content of the branch head
+\StrGobbleRight{\commit}{1}[\commithash]                  % Remove end of line character
+% Take only the first 7 characters
+\StrLeft{\commithash}{7}[\shortcommithash]
+
+% Build the URL to this commit based on the information we now have
+\newcommand{\commiturl}{\url{https://github.com/nahuaque/inkstone-ember-archive/commit/\shortcommithash}}
 
 % === Title ===
 \title{Where Sex Wins: A Minimax Account of Hazard-Discounted Selection on Ordered Landscapes}
@@ -1491,11 +1508,11 @@ Sole author: conceptualization, methodology, formal analysis, and writing.
 \medskip
 \noindent\textbf{Acknowledgments.}
 The author used large language models for drafting, proofing, and \LaTeX{} formatting assistance, and for critical review suggestions: ChatGPT (GPT-5) and Anthropic Claude Sonnet (versions~4 and~4.5). 
-The author verified all mathematical claims and is responsible for the content and any errors.
+The author is responsible for the content and any errors.
 
 \medskip
 \noindent\textbf{Provenance and versioning.}
-Repository: \url{https://github.com/yourorg/yourrepo} (commit \texttt{abc1234}). 
+Repository:\\ \commiturl. 
 Compiled with pdf\TeX{} 1.40.27 (TeX Live 2025). 
 
 \medskip
@@ -1507,7 +1524,7 @@ This preprint is distributed under the Creative Commons Attribution 4.0 Internat
 \addtocontents{toc}{\protect\setcounter{tocdepth}{1}} % no subsections in TOC
 
 %% Unification kit
-\section{ESH unification kit (classical recoveries)}
+\section{ESH classical recoveries}
 \label{sec:unification}
 
 \paragraph{Model pluralism without overreach.}
