@@ -641,8 +641,15 @@ Replacing $\Lambda$ by $\hazT{T}$ in the ESH immediately propagates into the sea
 \section{Minimax formulation: environment versus insurance}
 \label{sec:minimax}
 
-\paragraph{Why minimax instead of an average-case?}
-The minimax form is a robust surrogate for uncertainty in hazard statistics. Under convexity, the inner infimum is achieved at the edge $\hazmaxT{T}$, so the sufficient condition reduces to a transparent worst-case comparison \eqref{eq:robust-base}. Average-case variants are recovered by replacing $\hazmaxT{T}$ with an empirical $\widehat{\Lambda}^{(T)}$ (or a risk-sensitive entropic transform), but the minimax form guarantees correctness even when variance/skew/synchrony push the environment unfavorably.
+\paragraph{Why minimax (robust surrogate and safety margin).}
+The minimax form is a robust surrogate for uncertainty in hazard statistics. Under convexity, the inner infimum is attained at the edge
+$\hazmaxT{T}$, so the sufficient condition collapses to a transparent worst–case comparison \eqref{eq:robust-base}. We are not assuming an
+adversarial environment—only acknowledging that the true hazard law is often unknown, drifts across regimes, shows fat tails, and can
+synchronize across space or time. In such settings, optimizing an average can underweight precisely the episodes that dominate survival.
+The minimax comparison is therefore an epistemic safety margin: it certifies that sex still wins under the worst admissible lag–scale
+hazards consistent with the data, and it is monotone—if sex clears the boundary at the edge of the uncertainty set, it clears it for all
+milder scenarios inside it. When a stable, well–characterized hazard model is credible, the same boundary admits a mean–case reading:
+replace $\hazmaxT{T}$ with an empirical $\widehat{\Lambda}^{(T)}$ (or a risk–sensitive entropic transform) and re–evaluate.
 
 \paragraph{Players, payoff, and scale.}
 At the trait’s lag $T$ (Section~\ref{sec:block-hazard}), the environment chooses a block hazard from an admissible uncertainty set $\mathcal H(T)$; the lineage (sex) chooses where to spend a limited \emph{buffering} budget to reduce that block hazard at cost. The object of interest is the worst-case \emph{realized selection advantage of sex over asex} in a single $T$-block, which—by Section~\ref{sec:esh}’s accounting—reads
@@ -1416,7 +1423,7 @@ outside the narrow tradeoff space we analyze. Our contribution is more modest an
 specific: to show that even in the classical Kondrashov \& Kondrashov regime,
 where sex appears maladaptive because it slows progress on ordered landscapes,
 the hazard-discounting framework yields sharp conditions under which sex can
-still prevail. That is, we only place one piece of the puzzle, not resolve the whole picture.
+still prevail. That is, we only place one piece of the puzzle, we do not resolve the whole picture.
 
 \paragraph{On accessibility.}
 We concede that the present treatment is mathematically dense and will not be immediately accessible to all evolutionary biologists. This is largely unavoidable given our aim: to state the argument in a form that is both internally consistent and formally conservative, so that it recovers classical results in the appropriate limits and yields sharp, falsifiable boundaries. The cost of rigor here is reduced accessibility. We view this note as a “theory skeleton’’: its immediate audience is readers comfortable with the mathematics, and its longer-term impact will depend on subsequent expositions, simplifications, and empirical applications that make the core ideas more broadly approachable.
@@ -1432,10 +1439,13 @@ Any universal, assumption-free aggregator over environments is impossible in gen
 hazards in the declared uncertainty set $\Hset$ (lag-matched cumulant bounds/tail class), and makes no claim outside that domain.
 
 \paragraph{On implementation challenges.}
-We readily acknowledge that two key limitations are practical rather than theoretical: (i) empirically estimating lag-matched block hazards $\hazT{T}$ with sufficient precision, and (ii) linking the abstract notion of sex-specific buffering to concrete biological mechanisms in particular taxa. Both are nontrivial challenges, but they do not undermine the theoretical logic. The intent of this note is not to solve the empirical estimation problem or exhaustively catalogue mechanisms, but to set out a conservative framework within which such work can proceed. As with many classic theory models, the immediate value is conceptual: mapping out the tradeoff space in the abstract, clarifying where classical results are recovered, and identifying sharp conditions under which sex can win. Whether by direct operationalization or by reduction to simpler limiting forms, future empirical and modeling work can then build on this scaffolding.
+We readily acknowledge that two key limitations are practical rather than theoretical: (i) empirically estimating lag-matched block hazards $\hazT{T}$ with sufficient precision, and (ii) linking the abstract notion of sex-specific buffering to concrete biological mechanisms in particular taxa. Both are nontrivial challenges, but they do not undermine the theoretical logic. As with many classic theory models, the immediate value is conceptual: mapping out the tradeoff space in the abstract, clarifying where classical results are recovered, and identifying sharp conditions under which sex can win.
 
 \paragraph{Modeling scope and standing assumptions.}
 Our analysis targets ordered/epistatic settings where a completed genotype yields a delayed payoff and sex typically increases the completion lag ($T_S>T_A$, K\&K). We assume: (A1) a well-defined benefit time-profile $b(\tau)$ for the focal change; (A2) hazards that admit a lag-matched FK compression $\hazT{T}$ (Section~\ref{sec:block-hazard}) over the relevant $T$; (A3) small, targeted buffering $U$ available to sex with convex cost $\Delta c$; (A4) a bounded drift floor $c+\kappa/\Ne$; (A5) a compact, convex uncertainty set $\mathcal H(T)$ for block hazards; (A6) weak dependence/mixing sufficient for concentration of seasonal mixtures (Section~\ref{sec:esh}). These are deliberately conservative: they ensure existence of the saddle and the robust boundary without committing to a parametric environment.
+
+\paragraph{Model checking via Monte Carlo (prior-banded).}
+To avoid scope creep, we include two numerical exhibits only (the constructive counterexample and a micro $u$–$r$ phase diagram), and defer full empirical fitting. For future work, we propose an assessment of marginal explanatory power using a \emph{Monte Carlo model–checking} protocol: draw hazards from a prior over the uncertainty set $\Hset(T)$—priors on $(\mu,\sigma^2,\kappa_3,\text{tail},\rho)$ calibrated to plausible bands from the literature—together with priors for lags $(T_A,T_S)$ and cost proxies. For each draw, compute the block free energy $\Lambda^{(T)}$, the beyond-horizon share $\pi_{>}$, and the usable-seasons slope, then evaluate the sex–wins inequality (and its predicted \emph{sign} shifts under variance and synchrony). Compare a baseline predictive score (mutation-load/LD/Red-Queen covariates only) to a nested model that \emph{adds} ESH covariates last; report incremental out-of-sample log loss/AUC across the prior ensemble. This is model checking rather than full inference: nature supplies plausible prior bands, the Monte Carlo sweep tests whether ESH adds explanatory bite across those bands.
 
 \paragraph{Validity domains (when the accounting is faithful).}
 The ESH object $\seff(\Lambda)=\widehat b(\Lambda)-(c+\kappa/\Ne)$ is exact when hazards are constant within a block and remains faithful under mixing if $T$ matches the trait’s benefit lag. The minimax boundary (Section~\ref{sec:saddle}) is sufficient (not necessary): it guarantees sex wins even at the adversary’s edge $\Lmax$, and therefore may understate the parameter region where sex actually wins for a given empirical hazard series.
@@ -1477,7 +1487,7 @@ Our saddle proof and closed-form thresholds use small-control linearizations. Fo
 We analyze a focal trait; multiple concurrent ladders introduce linkage and competition for buffering. The ESH still applies trait-wise, but the minimax game becomes multi-objective (allocate $U$ across ladders to maximize the minimum advantage). LD and interference then enter through how recombination modifies each ladder’s effective $T$; this can be layered with our analysis without changing its logic.
 
 \paragraph{Conservative nature of the claim.}
-The theory is intentionally one-way: it recovers the classical limits (Appendix A), and its main inequality certifies sex’s advantage under the \emph{worst} admissible hazards at lag scale. Any empirically demonstrated variance within blocks, anti-synchrony across space, or spike trimming (reduced $\kappa_{3,T}$) only widens the true sex-wins region relative to our conservative boundary.
+The theory is intentionally one-way: it recovers the classical limits (Appendix~\ref{sec:unification}), and its main inequality certifies sex’s advantage under the \emph{worst} admissible hazards at lag scale. Any empirically demonstrated variance within blocks, anti-synchrony across space, or spike trimming (reduced $\kappa_{3,T}$) only widens the true sex-wins region relative to our conservative boundary.
 
 
 % === Figures ===
@@ -1783,16 +1793,6 @@ For small initial $p_0$ and moderate $K/N_0$, this reduces to the familiar condi
 
 \section{Minimax details and robust inequality}
 \label{sec:minimax-details}
-
-\paragraph{Why minimax (epistemic conservatism).}
-We do not assume the environment is “out to get” the lineage. We only assume that in the general case, we do not know the true hazard law. Averages with 
-variance are useful only when the law is stable and correctly specified; in many real systems hazards drift across regimes, exhibit fat tails, and synchronize 
-across space or time. Under those conditions, optimizing an average can understate the impact of the very episodes that dominate survival. The minimax 
-comparison is therefore a conservative backstop: we certify that sex still wins under the worst admissible lag-scale hazards consistent with the data. This 
-avoids model-misspecification surprises and makes the result monotone—if sex clears the boundary at the edge of the uncertainty set, it clears it for all 
-milder scenarios inside it. If a stable, well-characterized hazard model is available, the same boundary admits a mean-case reading: simply replace the 
-worst-case lag-scale hazard with an empirical estimate (or a risk-sensitive average) and re-evaluate. In short, our use of minimax is an epistemic safety 
-margin; the mean-case variant is a drop-in whenever its assumptions are credible.
 
 We recall the per–$T_S$-block value function from~\eqref{eq:minimax},
 \[
