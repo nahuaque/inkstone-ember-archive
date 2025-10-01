@@ -11,6 +11,7 @@
 \usepackage{autobreak}
 \usepackage{bm}
 \usepackage{microtype}
+\usepackage{framed}
 \usepackage{graphicx}
 \usepackage{xcolor}
 \usepackage[hidelinks]{hyperref}
@@ -126,7 +127,12 @@ typically helps while skew harms, and recovers classical results as limiting
 cases. In short, the machinery converts “hazards matter” from a truism into a
 quantitative boundary.
 
-Why bring this machinery to bear on the evolution of sex? Because the \citet{Kondrashov2001} 
+\begin{framed}
+\textbf{In a nutshell.}
+In hazardous but not extreme environments, sex has a superior way to turn latent variation into \emph{useful} protection: it can place hazard cuts where they matter most in time, so more benefit arrives inside the selection horizon. Three levers drive this edge: (i) temporal variability is an ally—at fixed mean, variance lowers the effective hazard and enlarges the window sex can exploit; (ii) recombination and sexual selection raise the conversion rate of stored variation into well-targeted buffering (trimming spikes, breaking synchrony, front-loading payoffs); and (iii) across multiple traits, diversification makes those gains add up faster for sex than worst-case penalties can grow. Net: despite slower tempo, when risk is substantial but not overwhelming, sex can buy more—and better-placed—hazard relief per unit variation than asexuals, converting it into a decisive realized advantage.
+\end{framed}
+
+Why bring the Effective Selection Horizon machinery to bear on the evolution of sex? Because the \citet{Kondrashov2001} 
 paradox illustrates exactly where intuitive arguments run out.
 On ordered landscapes, recombination slows progress by disrupting partially
 completed steps, so asexual lineages adapt faster. Intuition alone suggests
@@ -204,9 +210,7 @@ The Donsker--Varadhan variational identity interprets $\hazT{T}$ as a convex tra
 Casting the environment as an adversary choosing hazards within an uncertainty set aligns with robust optimization. In the small-control regime the sexual advantage is linear in control (weights $B T e^{-\hazT{T}T}$), making allocation convex (or submodular in a bucketed version) and yielding standard approximation guarantees. Across multiple traits, leverage adds as $\|w\|_1$ while the adversary’s worst-case penalty scales like $\|w\|_2$ under covariance bounds, explaining the diversification effect that enlarges the sex-wins region.
 
 \paragraph{What is new here.}
-To our knowledge, what is novel is the synthesis: (i) a single \emph{Effective Selection Horizon} that recovers Kimura, Fisher/Hamilton, bet-hedging, Hill–Robertson signs, and rescue as limits; (ii) a \emph{lag-matched} block hazard $\hazT{T}$ that makes variance/skew/synchrony corrections explicit at the trait’s timescale; and (iii) a \emph{minimax} inequality that states, in one line, when a slower sexual path still prevails on ordered landscapes. We do not claim a general theory of sex; the contribution is a conservative completion of the ordered-ladder paradox under realistic hazard timing, together with a compact boundary that is falsifiable and extends naturally to multi-trait portfolios. We view this as a \emph{conservative reframing}: it preserves classical limits exactly while replacing raw tempo by realized, hazard–tilted selection and evaluating ordered slowdowns under a worst-admissible lag-scale hazard.
-
-% (Add citations here to: Kondrashov & Kondrashov; Kimura; Fisher, Hamilton; Gillespie; Tuljapurkar; Hill & Robertson; recombination in heterogeneous environments; Gomulkiewicz & Holt; Sella & Hirsh; Rivoire & Leibler; standard robust optimization and submodular maximization references.)
+To our knowledge, what is novel is the synthesis: (i) a single \emph{Effective Selection Horizon} that recovers Kimura, Fisher/Hamilton, bet-hedging, Hill–Robertson signs, and rescue as limits; (ii) a \emph{lag-matched} block hazard $\hazT{T}$ that makes variance/skew/synchrony corrections explicit at the trait’s timescale; and (iii) a \emph{minimax} inequality that states, in one line, when a slower sexual path still prevails on ordered landscapes. We do not claim a general theory of sex; the contribution is a completion of the ordered-ladder paradox under realistic hazard timing, together with a compact boundary that is falsifiable and extends naturally to multi-trait portfolios. We view this as a \emph{conservative reframing}: it preserves classical limits exactly while replacing raw tempo by realized, hazard–tilted selection and evaluating ordered slowdowns under a worst-admissible lag-scale hazard.
 
 \section{Problem: Ordered adaptation under hazard}
 
@@ -575,7 +579,7 @@ Moran’s theorem showed that spatially separated populations subject to correla
 \paragraph{Spatial RG and synchrony.}
 Coarse-graining patches into “super-patches” of linear size $\ell$ yields spatial block hazards $\Lambda^{(T,\ell)}$. Increasing $\ell$ typically amplifies shock synchrony (Moran effect). Synchrony weakens metapopulation rescue, inflates $\pi_{>}$ at regional scale, and steepens failure risks (Griffiths-type rare-region effects when bad patches cluster). Thus, while temporal variance can lower $\hazT{T}$, \emph{spatial} synchrony generally shifts the overall tradeoff against sex unless buffering also disrupts synchrony or targets the worst phases/places.
 
-\paragraph{Spatial synchrony and dispersal.}
+\paragraph{Dispersal.}
 Let there be $P$ patches with same-time hazard vector $(\Lambda_t^{(1)},\dots,\Lambda_t^{(P)})$,
 common mean $\mu$, per-patch variance $\sigma_\Lambda^2$, and pairwise correlation $\rho$ (Moran
 synchrony). The regional mean hazard $\bar\Lambda_t:=\tfrac{1}{P}\sum_i \Lambda_t^{(i)}$ has
