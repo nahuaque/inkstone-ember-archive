@@ -1297,6 +1297,26 @@ Our inequality preserves K\&K’s core dependence on $r=T_S/T_A$: the tempo pena
 \paragraph{What is (and is not) new.}
 The novelty is twofold and minimal: (i) the ESH accounting that replaces raw tempo with realized selection via a single Laplace tilt; and (ii) the minimax boundary that evaluates the same K\&K slowdown $r$ under the \emph{worst admissible} lag-scale hazard $\Lmax$. Everything else—LD interference on ordered steps, the sign of recombination’s effect on $T$, drift floors—remains as in the classics. Lemmas~\ref{lem:kimura}–\ref{lem:rescue} (Appendix~\ref{sec:unification}) formalize these recoveries.
 
+\paragraph{Shahshahani/Fisher geometry.}
+Selection on the simplex \(\Delta\) carries the Fisher--Shahshahani metric \(g_{ij}(p)=\delta_{ij}/p_i\).
+When payoffs admit a potential \(\Phi^{(\Lambda)}\) whose partials are the ESH-tilted fitnesses
+\(f_i^{(\Lambda)}(p)=\widehat b_i(\Lambda;p)-c_i\), the replicator equation is the natural-gradient flow
+\[
+\dot p_i \;=\; p_i\big(f_i^{(\Lambda)}(p)-\bar f^{(\Lambda)}(p)\big)
+\;=\; \big(\nabla^{\!Sh}\Phi^{(\Lambda)}\big)_i.
+\]
+Thus FK discounting (the ESH tilt) changes the \emph{potential} but not the \emph{geometry}:
+along trajectories,
+\[
+\frac{d}{dt}\,\Phi^{(\Lambda)}(p(t)) \;=\; \operatorname{Var}_{p(t)}\!\big(f^{(\Lambda)}(p(t))\big)\;\ge 0,
+\]
+and, for potential games with an ESS \(p^\star\), the KL divergence contracts,
+\[
+\frac{d}{dt}\,D_{\mathrm{KL}}\!\big(p^\star\;\|\;p(t)\big)\;\le 0.
+\]
+Operationally, the hazard knob \(\Lambda^{(T)}\) reweights time profiles \(b(\tau)\) (earlier mass counts more)
+while preserving the Fisher geometry that underwrites our minimax structure.
+
 \paragraph{A simple K\&K reconciliation picture.}
 Think of the decision as two nested questions: (Q1) On your ordered landscape, is $r>1$? If yes, sex is \emph{slower} by K\&K. (Q2) Are hazards and buffering such that $u>1-1/r$ (plus the cost/drift surcharge), evaluated at $\Lmax$? If yes, sex is \emph{better} in realized selection despite being slower in tempo. When hazards are negligible or buffering infeasible, (Q2) fails and K\&K’s conclusion stands. When hazards are material and targeted buffering is available, (Q2) can succeed and flips the outcome. Thus ESH/minimax does not contradict K\&K; it \emph{completes} the story by specifying the ecological regimes where a slower sexual path wins because it extends the future that selection can see.
 
