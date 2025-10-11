@@ -1,0 +1,778 @@
+\documentclass[11pt]{article}
+\usepackage[a4paper,margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[hidelinks]{hyperref}
+\usepackage{booktabs}
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage{enumitem}
+\usepackage{xstring}
+\usepackage{catchfile}
+\usepackage[final]{microtype}
+
+\newtheoremstyle{upright}%
+  {3pt}{3pt}%   Space above/below
+  {\normalfont}% Body font (upright)
+  {}%           Indent amount
+  {\bfseries}%  Head font
+  {.}%          Punctuation after head
+  {.5em}%       Space after head
+  {}%           Head spec
+
+\theoremstyle{upright}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+\newtheorem{corollary}{Corollary}
+\newtheorem{proposition}{Proposition}
+\newtheorem{definition}{Definition}
+\newtheorem{remark}{Remark}
+
+% Set user input
+\newcommand{\gitfolder}{../../.git}             % Relative path to .git folder from .tex file
+
+% Based on this https://tex.stackexchange.com/questions/455396/how-to-include-the-current-git-commit-id-and-branch-in-my-document
+\CatchFileDef{\headfull}{\gitfolder/HEAD}{}              % Get path to head file for checked out branch
+\StrGobbleRight{\headfull}{1}[\head]                      % Remove end of line character
+\StrBehind[2]{\head}{/}[\branch]                          % Parse out the path only
+\CatchFileDef{\commit}{\gitfolder/refs/heads/\branch}{}  % Get the content of the branch head
+\StrGobbleRight{\commit}{1}[\commithash]                  % Remove end of line character
+% Take only the first 7 characters
+\StrLeft{\commithash}{7}[\shortcommithash]
+% Build the URL to this commit based on the information we now have
+\newcommand{\commiturl}{\url{https://github.com/nahuaque/inkstone-ember-archive/commit/\shortcommithash}}
+
+\title{No Global Diagonal: From Logical Diagonalization to Quantum No-Cloning, Local Classicality, and a No-Coaction UV Filter}
+\author{Lorand Bruhacs}
+\date{\normalsize \today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We argue that quantum no-cloning is the physical manifestation of a general diagonalization constraint: in causal, monoidal (non-cartesian) process theories there is no natural global diagonal, hence no uniform copier. We formulate this as a structural no-go for causal, monoidal process theories, and then instantiate it in \textbf{Hilb} as no-cloning and no-broadcasting.
+Locally, decoherence defines an idempotent comonad whose Eilenberg--Moore coalgebras are the classical systems inside a causal wedge; AQFT locality confines these ``local diagonals'' to light-cones. Finally, we state a No-Coaction Principle: background-independent UV completions admit no natural Sweedler coaction (no globally copyable labels), yielding a kinematic filter that excludes preferred-frame or foliation models. The result reframes background independence as the categorical absence of a global diagonal and unifies logical diagonalization, quantum no-go theorems, and relativistic causality. As a consequence, spacetime locality appears as the organization of \emph{local} diagonals (classical structures) across causal wedges: a sheaf-like arrangement that glues where compatible, yet admits no global section—an information-theoretic expression of background independence.
+
+\end{abstract}
+
+\tableofcontents
+
+\section{Introduction}
+\label{sec:intro}
+
+\paragraph{}
+Self-reference is a unifying motif across logic, computation, and physics~\cite{BaezStay2011}, but it manifests differently in each domain. In logic and the theory of computation, self-reference is enabled by diagonalization---the ability of an expression or program to, in some sense, apply to or describe itself. This idea underwrites Gödel's incompleteness phenomenon~\cite{Godel1931}, Tarski's undefinability theorem~\cite{Tarski1936}, and Lawvere's categorical fixed-point theorem~\cite{Lawvere1969}. In quantum theory, by contrast, the \emph{no-cloning theorem} forbids a universal operation that duplicates an arbitrary (unknown) quantum state. At first sight these themes seem orthogonal: diagonalization belongs to metamathematics, no-cloning to physics. The central claim of this note is that they are structurally connected. Specifically, we argue that the quantum no-cloning theorem is the physical realization of a \emph{diagonalization constraint}: it is precisely the categorical absence of a uniform diagonal that prevents global self-reference in quantum mechanics.
+
+\paragraph{}
+Our point of departure is categorical. In cartesian closed categories (CCCs), products and exponentials provide a uniform \emph{diagonal} $\Delta_A : A \to A \times A$ and an \emph{evaluation} map $\mathrm{ev} : B^A \times A \to B$. Lawvere's fixed-point theorem shows that, given a weakly point-surjective $e : A \to B^A$, every endomap $f : B \to B$ has a fixed point. This abstractly captures the essence of diagonalization: the existence of a natural mechanism for ``self-application'' generates pervasive fixed points and, in logical settings, self-referential constructions. In short, a global, natural diagonal is the categorical engine of self-reference.
+
+\paragraph{}
+Quantum mechanics, formulated categorically in the dagger symmetric monoidal category \textbf{Hilb}~\cite{AbramskyCoecke2004,Selinger2010}, lacks this cartesian structure. Tensor $\otimes$ is monoidal rather than cartesian, and there are no categorical products or exponentials. Consequently, there is \emph{no natural diagonal} $\Delta_H : H \to H \otimes H$~\cite{AbramskyCoecke2004,Selinger2010}. This categorical fact is the essence of \emph{no-cloning}: there is no nonzero natural transformation $\mathrm{Id} \Rightarrow (-)\otimes(-)$, and physically there is no unitary $U$ with $U \, |\psi\rangle |0\rangle = |\psi\rangle |\psi\rangle$ for all $|\psi\rangle$. From this perspective, no-cloning is not a contingent dynamical quirk but the categorical denial of a uniform diagonal---the very structure that, in classical settings, enables self-reference via diagonalization.
+
+\paragraph{}
+This observation suggests a dictionary: (i) in logical/computational settings, the presence of a natural diagonal enables global self-application and fixed points (Lawvere-style diagonalization); (ii) in quantum settings, the absence of a natural diagonal enforces a limit that we can read as a \emph{diagonalization constraint}, expressed physically as no-cloning (and, more generally, no-broadcasting). The result is that where classical systems admit global self-reference, quantum systems admit only \emph{restricted} or \emph{contextual} forms of self-reference.
+
+\paragraph{}
+The restriction is not absolute: within \textbf{Hilb}, \emph{basis-dependent} copying maps exist. A chosen orthonormal basis determines a commutative special dagger Frobenius algebra whose comultiplication $\delta$ copies those basis states, i.e.\ $\delta(|i\rangle) = |i\rangle \otimes |i\rangle$, but not arbitrary superpositions (Coecke \& Kissinger, 2017). These structures pick out ``classical islands'' inside quantum theory~\cite{CoeckeKissinger2017} where a non-uniform, non-natural diagonal is available. Interpreted through our lens, such islands support \emph{local} diagonalization---hence classical forms of self-reference---while the global, basis-independent case remains prohibited. This reconciles classical self-referential behavior with the quantum prohibition: classicality corresponds to subtheories where copying is admissible.
+
+\paragraph{}
+The contribution of this note is conceptual rather than technical: we (1) assemble well-known categorical facts about diagonalization in CCCs and about the absence of natural diagonals in \textbf{Hilb}; (2) present a clean correspondence between logical diagonalization and the physical no-cloning constraint; (3) highlight basis-dependent Frobenius structures as ``local diagonals'' supporting restricted self-reference; and (4) discuss interpretational implications, suggesting that quantum theory replaces global self-reference with \emph{self-consistency} (fixed points of dynamics, relational descriptions) rather than self-description via duplication.
+
+\paragraph{}
+The paper proceeds from general to specific. Section~\ref{sec:structural-noglobal} develops a structural framework for ``no global diagonal'' in causal process theories (definition, broadcast lemma, and the causal no-go). Section~\ref{sec:hilb} instantiates this in \textbf{Hilb} as categorical no-cloning and its representation-theoretic form. Section~\ref{sec:local-classicality-descent} treats locality: basis-dependent (Frobenius) copying, decoherence as a comonad whose coalgebras are the classical systems, and light-cone confinement in AQFT. Section~\ref{sec:no-coaction-uv-filter} states the No-Coaction Principle and a kinematic UV filter. Section~\ref{sec:philosophy} discusses philosophical implications.
+
+%% structural no-global
+\section{A Structural No-Global-Diagonal Framework}
+\label{sec:structural-noglobal}
+
+\paragraph{Process-theoretic backdrop.}
+We work in a symmetric monoidal category of processes $(\mathcal{C},\otimes,I)$ with an environment structure (discard maps) $\mathsf{discard}_X:X\to I$ and a class of \emph{causal} morphisms $\Phi$ satisfying $\mathsf{discard}\circ \Phi=\mathsf{discard}$, closed under $\circ$ and $\otimes$. We assume an operational \emph{no-signalling} law: for all $A,B$ and causal $\Lambda_A:A\!\to\!A'$,
+\begin{equation}\label{eq:struct-nosig}
+(\mathsf{discard}_{A'}\!\otimes\!\mathrm{id}_B)\circ(\Lambda_A\!\otimes\!\mathrm{id}_B)
+=
+(\mathsf{discard}_{A}\!\otimes\!\mathrm{id}_B).
+\end{equation}
+
+\begin{definition}[Global diagonal copier]
+\label{def:struct-diagonal}
+A \emph{global diagonal} is a natural family of causal morphisms $\Delta_X:X\to X\otimes X$ such that
+\begin{equation}\label{eq:struct-counit}
+(\mathsf{discard}_X\!\otimes\!\mathrm{id}_X)\circ\Delta_X=\mathrm{id}_X
+=
+(\mathrm{id}_X\!\otimes\!\mathsf{discard}_X)\circ\Delta_X.
+\end{equation}
+\end{definition}
+
+\begin{lemma}[Diagonal $\Rightarrow$ broadcasting]
+\label{lem:struct-broadcast}
+If $\Delta$ satisfies \eqref{eq:struct-counit}, then for any state $\omega:X\to I$, both marginals of $(\Delta_X)\omega$ equal $\omega$. Hence $\Delta_X$ is a uniform broadcaster on $X$.
+\end{lemma}
+
+\begin{theorem}[Global causality precludes a nonclassical global diagonal]
+\label{thm:struct-noglobal}
+If $(\mathcal{C},\otimes,I)$ satisfies \eqref{eq:struct-nosig} and contains a non-classical object $Q$ (non-simplicial / noncommutative), then there is no nonzero global diagonal $\Delta$ on all objects. Any global diagonal, if it exists, restricts to classical sectors only.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+By Lemma~\ref{lem:struct-broadcast}, $\Delta_Q$ broadcasts all states on $Q$.  In generalized probabilistic theories, universal broadcasting is possible \emph{iff} the state space is a simplex (classical)~\cite{BarnumEtAl2007}; in QM, iff states commute. Thus $\Delta_Q$ cannot exist on non-classical $Q$. Operationally, a uniform broadcaster enables spacelike signalling via remote ensemble discrimination, contradicting \eqref{eq:struct-nosig}.
+\end{proof}
+
+\begin{definition}[Classical vs.\ non-classical objects]
+An object $X$ of $(\mathcal C,\otimes,I)$ is \emph{classical} if its state space is simplicial (in GPT terms) or, in the C$^\ast$ setting, if its effect algebra is commutative; otherwise $X$ is \emph{non-classical}.
+\end{definition}
+
+\begin{remark}[Naturality domain]
+Throughout, ``natural'' means natural with respect to the relevant automorphism/covariance groupoid (e.g.\ unitary isomorphisms in $\mathbf{Hilb}$, or spacetime embeddings/diffeomorphisms in locally covariant QFT), and with respect to causal morphisms in the process category. This ensures global diagonals/coactions are genuine basis-independent structures rather than choices tied to a context.
+\end{remark}
+
+
+\paragraph{Causal linearity and no-signalling (instance).}
+In $\mathrm{CPM}[\mathbf{Hilb}]$, causal maps are exactly CPTP and \eqref{eq:struct-nosig} holds; hence Theorem~\ref{thm:struct-noglobal} applies directly.
+
+\paragraph{Dictionary to logic.}
+In cartesian closed settings, a natural diagonal with evaluation yields Lawvere fixed points; in monoidal quantum settings, the absence of a natural diagonal enforces no-cloning/broadcasting.
+
+\paragraph{No global diagonal $\Rightarrow$ background independence.}
+We take \emph{background independence} to imply: there is no absolute, globally copyable reference structure (preferred frame, foliation, universal clock/label) against which all systems can be uniformly tagged. \footnote{To our knowledge, this equivalence has not been stated explicitly in the literature. There are, however, adjacent lines of work that hint at it from different angles: (i) in sheaf- and topos-theoretic approaches, contextuality/nonlocality is characterized as the \emph{failure of global sections} of a presheaf of classical contexts \cite{AbramskyBrandenburger2011,DoeringIsham2008}; (ii) in locally covariant QFT, \emph{background independence} is formalized as functoriality under spacetime embeddings, with microcausality and split property encoding the local/gluing structure of observables \cite{BrunettiFredenhagenVerch2003,BuchholzWichmann1986,DoplicherLongo1984}; (iii) in gauge/gravity, gravitational dressing and edge modes imply a failure of global factorization of the physical Hilbert space, i.e.\ only local “classical” data can be separated \cite{DonnellyFreidel2016,DonnellyWall2016}; and (iv) in categorical quantum mechanics, the \emph{absence of a natural diagonal} in \textbf{Hilb} is noted as the structural content of no-cloning \cite{AbramskyCoecke2004}. The present work identifies these strands as facets of a single statement: \emph{the absence of a natural global diagonal (equivalently, of a natural coaction) \textbf{forces} background independence under our causal/covariant assumptions}.}In the present process-theoretic setting, any such global background would be realized as a \emph{global diagonal} (Def.~\ref{def:struct-diagonal}) or, equivalently, as a natural coaction $\rho_X:X\!\to\!X\!\otimes\!C$ by a commutative coalgebra $C$ of classical labels. In gauge and gravitational theories, subsystem factorization fails 
+due to edge modes and dressing, preventing a global tensor decomposition~\cite{DonnellyFreidel2016}. Hence the \emph{absence of a natural global diagonal} \emph{forces} background independence: if $\nexists\,\Delta$ (and thus no natural $\rho$), then no globally copyable label exists. This identification parallels the sheaf-theoretic account of contextuality, where the failure of a global section captures precisely the obstruction to classical (cartesian) globality~\cite{AbramskyBrandenburger2011}. 
+
+\paragraph{Local diagonals and the obstruction to gluing.}
+Operationally, classical behavior does appear—but only \emph{locally} and \emph{contextually}. The basis-dependent copy/delete maps (Frobenius ``islands'') and the coalgebras of the local decoherence comonad assemble into a prestack of \emph{local diagonals} over the causal site of regions. Background independence then reads as the \emph{failure of a global section} of this prestack: local diagonals glue on overlaps (effective descent in causal wedges), yet there is no single global diagonal consistent everywhere. Informally, one can view this as a nontrivial ``diagonal obstruction class'' $[\omega_\Delta]$ (in a suitable 1-cohomology of gluing data) that vanishes only for fully classical/background-dependent theories and is generically nonzero in quantum, locally covariant settings.
+
+%% diagonalization and fixed points
+\section{Diagonalization and Fixed Points in Logic}
+\label{sec:diag-fixed}
+
+\subsection{The Classical Pattern}
+
+\paragraph{}
+At its most schematic, \emph{diagonalization} is the passage from a binary operation or predicate to a unary one by feeding an input into both argument places. In \textbf{Set}, this is captured by the \emph{diagonal map}
+\begin{equation}\label{eq:diag}
+\Delta_X : X \to X \times X,
+\qquad
+\Delta_X(x) := (x,x).
+\end{equation}
+Given any $g : X \times X \to Y$, the \emph{diagonal composite} $f := g \circ \Delta_X : X \to Y$ is the formal self-application
+\begin{equation}\label{eq:selfapp}
+f(x) = g(x,x).
+\end{equation}
+This innocuous-looking operation underwrites a wide range of self-referential phenomena.
+
+\paragraph{Liar-type schemas (truth predicates).}
+If $T(\cdot)$ is a truth predicate over codes of sentences, diagonalization yields a sentence $L$ that asserts its own untruth, $L \equiv \neg T(\ulcorner L\urcorner)$. Tarski's undefinability theorem shows that a sufficiently expressive theory cannot contain a truth predicate for its own language without collapsing into inconsistency. The crux is exactly the availability of a uniform diagonal~\eqref{eq:diag} to form self-reference.
+
+\paragraph{Gödel's fixed-point/diagonal lemma.}
+In an arithmetically adequate theory $T$ (e.g.\ PA), for any formula $\vartheta(x)$ with one free variable, there exists a sentence $\sigma$ (its \emph{fixed point}) such that
+\begin{equation}\label{eq:godel}
+T \vdash \sigma \leftrightarrow \vartheta(\ulcorner \sigma \urcorner).
+\end{equation}
+Intuitively, one constructs a \emph{quining} function $d$ on Gödel numbers which, given $\ulcorner \phi(x)\urcorner$, returns the code of the sentence obtained by substituting $\ulcorner \phi(x)\urcorner$ for $x$ inside $\phi$. Setting $\sigma := \phi(\ulcorner \phi \urcorner)$ with $\phi(x) := \vartheta(d(x))$ yields~\eqref{eq:godel}. Choosing $\vartheta(x) \equiv \neg \mathrm{Prov}_T(x)$ gives Gödel's first incompleteness theorem \cite{Godel1931}.
+
+\paragraph{Kleene's recursion (fixed-point) theorem.}
+Let $\{\varphi_e\}_{e \in \mathbb{N}}$ be a numbering of partial computable functions, and let $f:\mathbb{N}\to\mathbb{N}$ be total computable. Then there exists $e^\ast$ such that
+\begin{equation}\label{eq:kleene}
+\varphi_{e^\ast} \simeq \varphi_{f(e^\ast)}.
+\end{equation}
+Equivalently, for every effective program transformation $f$, there is a program that is a fixed point of $f$ up to extensional equality. The standard proof uses the $s$--$m$--$n$ theorem to build a \emph{diagonalizer} that feeds a program its own code, mirroring~\eqref{eq:selfapp}~\cite{Kleene1938}. Quines (self-printing programs) are concrete instances of such fixed points.
+
+\paragraph{Takeaway.}
+Across truth, arithmetic, and computation, diagonalization---the ability to \emph{uniformly duplicate} an input---is the mechanism that turns an external description into a self-referential one. The logical power (and danger) of self-reference is precisely the power to form $g(x,x)$ from $g$.
+
+\subsection{Lawvere’s Categorical Formulation}
+
+\paragraph{Setup.}
+Let $\mathcal{C}$ be a Cartesian closed category (CCC) with finite products $(\times, 1)$, exponentials $B^A$, and evaluation $\mathrm{ev}: B^A \times A \to B$. For any $k: A \times A \to B$, write its curry as $\Lambda(k): A \to B^A$, characterized by
+\[
+\mathrm{ev} \circ \langle \Lambda(k), \mathrm{id}_A \rangle \;=\; k.
+\]
+Conversely, for any $h: A \to B^A$, define its un‑curry $h^\sharp := \mathrm{ev}\circ\langle h, \mathrm{id}_A\rangle : A \times A \to B$, with $(\Lambda(k))^\sharp = k$.
+
+\paragraph{Lawvere’s fixed-point theorem (weak point-surjectivity).}
+If there exists $e : A \to B^A$ that is \emph{weakly point-surjective} (i.e.\ for every $h : A \to B$ there exists a global element $a:1\to A$ with $h = \mathrm{ev}\circ\langle e, a\rangle$), then every endomap $f : B \to B$ has a fixed point.
+
+\paragraph{Proof sketch.}
+Form $g := \mathrm{ev} \circ \langle e, \mathrm{id}_A \rangle : A \to B$, which is the categorical incarnation of self-application: apply $e(a)$ to $a$. By weak point-surjectivity, there is $a:1\to A$ with $g = \mathrm{ev}\circ \langle e, a\rangle$. Define $b := \mathrm{ev}\circ \langle e, a\rangle : 1 \to B$. Then
+\[
+f \circ b
+= f \circ \mathrm{ev}\circ \langle e, a\rangle
+= \mathrm{ev}\circ \langle f \circ e, a\rangle
+= \mathrm{ev}\circ \langle e, a\rangle
+= b,
+\]
+so $b$ is a fixed point of $f$. The central construction factors through the diagonal:
+\[
+\langle e, \mathrm{id}_A \rangle
+= (e \times \mathrm{id}_A) \circ \Delta_A,
+\]
+making explicit the role of copying the input.
+
+\paragraph{Interpretation.}
+Lawvere’s theorem abstracts diagonalization: a uniform diagonal $\Delta_A$ together with an ``enumerator'' $e$ (a categorical surrogate for quoting or Gödel numbering) forces pervasive fixed points. In syntactic CCCs (e.g.\ the Lindenbaum--Tarski category of a theory), specializations of this argument yield the diagonal lemma; in \textbf{Set} with effective structure, they yield Kleene’s recursion theorem. The common engine is the ability to (a) duplicate an input and (b) evaluate a description on that duplicated input.
+
+\paragraph{Moral for later use.}
+The hypothesis that makes Lawvere’s theorem go through is precisely the availability of a \emph{natural} diagonal $\Delta_A$. In categories where no such natural diagonal exists, the uniform route to global self-reference is blocked. This observation will be the bridge to the quantum case, where \textbf{Hilb} is monoidal but \emph{not} cartesian and hence lacks a natural diagonal.
+
+%% instantiation in Hilb
+\section{Instantiation in \textbf{Hilb}: Categorical No-Cloning}
+\label{sec:hilb}
+
+\subsection{Categorical Structure of \textbf{Hilb}}
+
+\paragraph{}
+Let \textbf{Hilb} denote the category whose objects are finite-dimensional complex Hilbert spaces and whose morphisms are linear maps.\footnote{All statements extend to suitable infinite-dimensional settings with technical care; for conceptual clarity we keep the finite-dimensional case.} It carries a \emph{dagger} (an identity-on-objects contravariant involutive functor $(\cdot)^\dagger$) given by taking adjoints of linear maps, and a \emph{symmetric monoidal} structure with tensor product
+\[
+\otimes : \textbf{Hilb} \times \textbf{Hilb} \to \textbf{Hilb}, \qquad I := \mathbb{C},
+\]
+unitors and associators given by the standard Hilbert space isomorphisms, and symmetry $\sigma_{H,K}:H\otimes K \to K\otimes H$ as the swap. In fact, \textbf{Hilb} is \emph{compact closed}: every object $H$ has a dual $H^\ast$ with cups and caps implementing the adjunction (Abramsky \& Coecke, 2004).
+
+\paragraph{}
+Crucially, the monoidal structure $(\textbf{Hilb}, \otimes, I)$ is \emph{not cartesian}. There are no projection morphisms $p_1:H\otimes K \to H$, $p_2:H\otimes K \to K$ satisfying the product universal property, and there are no exponentials $K^H$ internal to this monoidal structure. Intuitively, $\otimes$ models \emph{physical composition} of systems rather than cartesian product of data types. As a consequence, there is \emph{no natural diagonal} of the form
+\begin{equation}\label{eq:natural-diag}
+\Delta_H : H \longrightarrow H \otimes H
+\end{equation}
+natural in $H$.\footnote{While \textbf{Hilb} has \emph{biproducts} given by direct sums $H \oplus K$, which \emph{are} categorical products and coproducts with projections and injections, these govern \emph{classical branching/addition} rather than physical composition. The no-cloning discussion concerns the monoidal product $\otimes$.}
+
+\paragraph{}
+This absence of a natural diagonal is not an ad hoc prohibition but a direct consequence of quantum theory's linear--relational architecture: composition by tensor introduces entangled degrees of freedom and linear superposition, neither of which is compatible with a basis-independent copier for arbitrary states.
+
+\subsection{Categorical No-Cloning Theorem}
+
+\paragraph{Statement (categorical form).}
+Let $F:\mathbf{Hilb}\to\mathbf{Hilb}$ be the functor $F(H):=H\otimes H$ (i.e.\ the tensor product postcomposed with the diagonal-on-objects functor). There is no nonzero natural transformation
+\[
+\Delta : \mathrm{Id}_{\mathbf{Hilb}} \Rightarrow F,
+\]
+equivalently, no natural family of morphisms $\{\Delta_H : H \to H\otimes H\}_H$.
+
+\paragraph{Proof sketch (one-dimensional test).}
+Consider $H=\mathbb{C}$. By linearity, $\Delta_{\mathbb{C}}(1) = c\, (1\otimes 1)$ for some $c\in \mathbb{C}$. For each scalar $s\in\mathbb{C}$, let $\lambda_s:\mathbb{C}\to\mathbb{C}$ be multiplication by $s$. Naturality with respect to $\lambda_s$ requires
+\[
+(\lambda_s \otimes \lambda_s)\circ \Delta_{\mathbb{C}} \;=\; \Delta_{\mathbb{C}} \circ \lambda_s.
+\]
+Evaluating at $1$ yields $s^2 c\,(1\otimes 1) = s c\,(1\otimes 1)$ for all $s$, hence $(s^2 - s)c = 0$ for all $s$, forcing $c=0$. Thus $\Delta_{\mathbb{C}}=0$, and by naturality every $\Delta_H$ must be $0$ as well. $\square$
+
+\paragraph{Connection to physical no-cloning.}
+Suppose there were a unitary $U : H\otimes I \to H\otimes H$ and a fixed ``blank'' $|0\rangle\in I$ such that
+\begin{equation}\label{eq:unitary-clone}
+U\big(|\psi\rangle \otimes |0\rangle\big) \;=\; |\psi\rangle \otimes |\psi\rangle
+\qquad \text{for all unit vectors }|\psi\rangle\in H.
+\end{equation}
+Taking inner products for two arbitrary unit vectors $|\phi\rangle,|\psi\rangle$ and using unitarity,
+\[
+\langle \phi|\psi\rangle \;=\; \big\langle \phi|\psi\big\rangle^2,
+\]
+so $\langle \phi|\psi\rangle \in \{0,1\}$, a contradiction unless $|\phi\rangle,|\psi\rangle$ are identical or orthogonal. Thus no such $U$ exists; copying can succeed only on a fixed orthonormal set, not uniformly on all states~\cite{WoottersZurek1982}. This is the standard no-cloning theorem~\cite{WoottersZurek1982,Dieks1982},, which the categorical argument above elevates to a \emph{naturality obstruction}: there is no basis-independent copier (Abramsky, 2008; Coecke \& Kissinger, 2017).
+
+\paragraph{No-broadcasting (mixed states).}
+For density operators, a CPTP channel that \emph{broadcasts} a set $\mathcal{S}$ of states exists if and only if all states in $\mathcal{S}$ mutually commute (i.e.\ are jointly diagonalizable). Noncommuting families cannot be broadcast~\cite{BarnumEtAl1996}. This aligns with the categorical picture: only \emph{classical} (commutative) subalgebras admit copying-like operations.
+
+%% diagonalization vs no cloning
+\section{Diagonalization vs.\ No-Cloning: A Structural Correspondence}
+\label{sec:diag-nocloning}
+
+\subsection{Logical and Physical Analogues}
+
+\paragraph{}
+We collect the correspondences between the logical/cartesian and quantum/monoidal settings:
+
+\begin{tabular}{p{0.44\textwidth} p{0.48\textwidth}}
+\toprule
+\textbf{Logical/Computational (cartesian closed)} & \textbf{Quantum/Physical (symmetric monoidal, non-cartesian)}\\
+\midrule
+Natural diagonal $\Delta_A : A \to A\times A$ exists & No natural $\Delta_H : H \to H\otimes H$ exists \\
+Evaluation $B^A \times A \to B$ enables self-application & No cartesian evaluation; monoidal closure does not supply copying \\
+Lawvere fixed points $\Rightarrow$ global self-reference & No-cloning $\Rightarrow$ no uniform self-replication of states \\
+Diagonal lemma / recursion theorem & No-cloning / no-broadcasting constraints \\
+\bottomrule
+\end{tabular}
+
+
+\paragraph{A formal bridge.}
+We can sharpen these correspondences. \emph{A global diagonal is to classical self-reference what a uniform copier is to quantum theory: the same structure seen through two monoidal lenses—permitted cartesianly, obstructed monoidally:}
+
+\begin{proposition}[Natural diagonal $\Leftrightarrow$ uniform cloning]
+\label{prop:natural-diagonal}
+Let $\mathcal{C}$ be a dagger symmetric monoidal category. If there exists a natural family $\Delta_X : X \to X\otimes X$ (natural in $X$), then for every isometry $u:I\to X$ one obtains a uniform ``cloning'' isometry $c_u := \Delta_X \circ u : I \to X\otimes X$ satisfying $(f\otimes f)\circ c_u = c_{f\circ u}$ for all isometries $f:X\to Y$. Conversely, a choice of such $c_u$ natural in $(X,u)$ determines a natural $\Delta_X$ extending by linearity. In \textbf{Hilb}, no nonzero such family exists.
+\end{proposition}
+
+\begin{proof}[Proof sketch]
+The forward direction is immediate from naturality of $\Delta$. Conversely, given a family $c_u$ natural in $(X,u)$, define $\Delta_X$ on a basis via $u_i:I\to X$ with $u_i(1)=|i\rangle$ and extend linearly; naturality in isometries forces $\Delta$ to commute with all isometries, i.e.\ to be natural. The last claim is the categorical no-cloning statement proved in Section~\ref{sec:hilb}: in \textbf{Hilb}, any such natural family must be zero.
+\end{proof}
+
+\paragraph{Representation-theoretic proof of no natural diagonal.}
+Let $\mathrm{U}(H)$ act on $H$ by $U\cdot v := Uv$ and on $H\otimes H$ by $U\cdot (v\otimes w):=(Uv)\otimes (Uw)$. A natural family $\Delta_H$ must satisfy the intertwining relation
+\begin{equation}
+(U\otimes U)\,\Delta_H \;=\; \Delta_H\,U \qquad \text{for all } U\in \mathrm{U}(H).
+\label{eq:intertwine}
+\end{equation}
+Hence $\Delta_H \in \mathrm{Hom}_{\mathrm{U}(H)}(H,\,H\otimes H)$. For $\dim H=d\ge 2$,
+\[
+H\otimes H \;\cong\; \mathrm{Sym}^2 H \;\oplus\; \wedge^2 H
+\]
+and neither summand contains a copy of the defining representation $H$ as a $\mathrm{U}(d)$-module. Therefore
+\(
+\mathrm{Hom}_{\mathrm{U}(d)}(H,\,H\otimes H)=0
+\),
+forcing $\Delta_H=0$. (For $d=1$, the scalar argument yields $\Delta_{\mathbb{C}}=0$ as well.) This recovers the naturality obstruction without reference to dynamics.
+\qed
+
+Recent work further sharpens this correspondence by showing that 
+no-broadcasting precisely characterizes operational contextuality~\cite{Jokinen2024}.
+
+%% local classicality and descent
+\section{Local Classicality and Descent}
+\label{sec:local-classicality-descent}
+
+\paragraph{Motivation.}
+Having established that no \emph{global} diagonal exists in a causal, monoidal quantum theory, we now address a complementary question: \emph{where does classical behaviour come from in practice?} Empirically, we routinely record copyable, stable classical data—but only after a choice of context (measurement basis, apparatus, environment) and only within a bounded spacetime region. The categorical picture of \emph{classical structures} (basis-dependent copy/delete) and the physical mechanism of \emph{decoherence} both suggest that classicality is \emph{local and contextual}: it lives on commutative ``pointer'' subalgebras selected inside a causal wedge. In this section we formalize those local, basis-dependent ``diagonals'' and place them in a framework where they can be compared, transported, and (when compatible) glued.
+
+\paragraph{Aim.}
+Our goal here is to make the local-to-global logic explicit without assuming any hidden background structure. We proceed in three steps: (i) describe \emph{basis-dependent copying} (Frobenius ``islands'') as the operational form of locally cartesian behaviour; (ii) show that \emph{decoherence} in a region defines an \emph{idempotent comonad} whose Eilenberg--Moore coalgebras \emph{are} the classical systems in that region; and (iii) analyze \emph{descent} and \emph{causal support}: how these classical structures transform under restriction to subregions, when they glue across overlaps, and why relativistic locality confines them to light cones. The details that follow supply the mathematical statements; the upshot is that classicality is a locally defined, functorial notion that satisfies effective descent in causal wedges but admits no global extension.
+
+\subsection{Basis-Dependent Copying and Classical Substructures}
+
+\paragraph{Local diagonals via Frobenius algebras.}
+Although a \emph{natural} copier is forbidden, \textbf{Hilb} admits \emph{basis-dependent} copying maps. Fix an orthonormal basis $\{|i\rangle\}_i$ of $H$ and define linear maps
+\begin{equation}\label{eq:basis-copy}
+\delta : H \to H\otimes H, \quad \delta(|i\rangle) := |i\rangle \otimes |i\rangle,
+\qquad
+\varepsilon : H \to I, \quad \varepsilon(|i\rangle) := 1,
+\end{equation}
+extended linearly. Then $(H,\delta,\varepsilon)$ forms a commutative special dagger Frobenius algebra, also known as a \emph{classical structure} in categorical quantum mechanics~\cite{CoeckeKissinger2017}. It \emph{copies} the chosen basis exactly and \emph{deletes} it via $\varepsilon$. For superpositions,
+\[
+\delta\big(\alpha|i\rangle+\beta|j\rangle\big)
+= \alpha\,|i,i\rangle + \beta\,|j,j\rangle
+\neq (\alpha|i\rangle+\beta|j\rangle)^{\otimes 2},
+\]
+so interference terms are missing: copying fails beyond the classical slice. 
+
+\paragraph{Operational reading (qubit example).}
+Let $H=\mathbb{C}^2$. In the computational ($Z$) basis, the map $\delta_Z$ satisfies $\delta_Z|0\rangle=|00\rangle$, $\delta_Z|1\rangle=|11\rangle$. For the Hadamard ($X$) basis, $\delta_X|+\rangle=|++\rangle$, $\delta_X|-\rangle=|--\rangle$. But
+\[
+\delta_Z|+\rangle
+= \tfrac{1}{\sqrt{2}}\big(|00\rangle+|11\rangle\big)
+\;\neq\; |+\rangle\otimes|+\rangle
+= \tfrac{1}{2}\big(|00\rangle+|01\rangle+|10\rangle+|11\rangle\big).
+\]
+Thus each classical structure provides a \emph{local diagonal} valid only within its chosen eigenbasis; different classical structures are incompatible, and there is no way to ``sew them together'' into a natural copier.
+
+\paragraph{Context-relative self-reference.}
+Categorically, a classical structure corresponds to a commutative dagger Frobenius algebra, equivalently to a maximal commutative subalgebra of observables. Within that context, data behave cartesianly: they can be copied, deleted, and broadcast. This is the quantum analogue of \emph{partial} or \emph{context-relative} self-reference: diagonalization (self-application via copying) is admissible inside a chosen classical slice but fails globally. In information-theoretic terms, this echoes the \emph{no-broadcasting} theorem: only mutually commuting families of states admit broadcasting~\cite{BarnumEtAl1996}, i.e.\ copying of classical information encoded in a fixed eigenbasis.
+
+\paragraph{Non-naturalizability of local diagonals.}
+One might try to select, for each $H$, a basis-dependent copier $\delta_H$ and hope for naturality. However, naturality with respect to \emph{all} unitaries $U:H\to H$ forces the intertwining condition \eqref{eq:intertwine}, which by the representation-theoretic argument yields $\delta_H=0$ unless $\dim H=0$. Hence local diagonals cannot be promoted to a global, basis-independent one. This is precisely the structural content that ties ``no global diagonal'' to the physical \emph{no-cloning} constraint.
+
+\paragraph{Summary.}
+Global diagonalization (cartesian copying) underwrites logical self-reference and fixed points. Quantum theory replaces this with \emph{local} diagonals tied to classical structures: enough to recover classical behavior \emph{in context}, but never enough to yield a uniform, basis-independent copier. The resulting picture is that quantum mechanics enforces a diagonalization constraint: self-application is possible only where classicality has already been chosen.
+
+
+\subsection{Decoherence as a Comonad}
+\label{sec:decoherence-comonad}
+
+\paragraph{Local process category.}
+Fix a causally closed region $O$. Let $\mathbf{Proc}(O)$ denote the category of admissible processes localized in $O$. For definiteness one may take objects to be finite-dimensional systems (e.g.\ Hilbert spaces or matrix $C^\ast$-algebras attached to $O$) and morphisms to be completely positive trace-preserving (CPTP) maps (Schr\"odinger picture). The monoidal structure is the physical tensor $\otimes$.
+
+\paragraph{Pointer algebra and conditional expectation.}
+A \emph{decoherence channel} in $O$ is a normal CPTP idempotent map $\mathcal{D}_O^X:X\to X$ with fixed-point algebra
+\[
+\mathrm{Fix}(\mathcal{D}_O^X)\;=\;\mathsf{C}_O(X)\subseteq X,
+\]
+a commutative $C^\ast$-subalgebra (\emph{pointer algebra}). Concretely, $\mathcal{D}_O^X$ is a conditional expectation onto $\mathsf{C}_O(X)$ (e.g.\ pinching in a chosen orthonormal basis), and is assumed natural under isometries that preserve $\mathsf{C}_O$.
+
+\paragraph{The classicalization functor as a comonad.}
+Define an endofunctor
+\[
+\mathbf{D}_O:\mathbf{Proc}(O)\longrightarrow \mathbf{Proc}(O)
+\]
+by
+\[
+\mathbf{D}_O(X)\;:=\;\mathsf{C}_O(X),\qquad
+\mathbf{D}_O(f)\;:=\;\mathcal{D}_O^Y\circ f\circ \iota_X,
+\]
+for any CPTP $f:X\to Y$, where $\iota_X:\mathsf{C}_O(X)\hookrightarrow X$ is the canonical inclusion. Since $\mathcal{D}_O$ is idempotent and $\mathsf{C}_O(\mathsf{C}_O(X))=\mathsf{C}_O(X)$, $\mathbf{D}_O$ is \emph{idempotent} on objects and arrows:
+\[
+\mathbf{D}_O\circ \mathbf{D}_O \;\cong\; \mathbf{D}_O.
+\]
+Equip $\mathbf{D}_O$ with the counit and comultiplication
+\[
+\epsilon_X \;:=\; \iota_X:\ \mathbf{D}_O(X)\to X,
+\qquad
+\delta_X \;:=\; \mathrm{id}_{\mathbf{D}_O(X)}:\ \mathbf{D}_O(X)\to \mathbf{D}_O\mathbf{D}_O(X),
+\]
+extended naturally on morphisms. Then $(\mathbf{D}_O,\epsilon,\delta)$ is a comonad on $\mathbf{Proc}(O)$ (an \emph{idempotent comonad}): the coassociativity and counit laws hold because $\delta$ is the identity and $\epsilon$ is the inclusion of the image.
+
+\begin{definition}[Coalgebras for the decoherence comonad]
+A \emph{$\mathbf{D}_O$-coalgebra} is a pair $(X,\rho)$ with $\rho:X\to \mathbf{D}_O(X)$ in $\mathbf{Proc}(O)$ such that
+\[
+\mathbf{D}_O(\rho)\circ \rho \;=\; \delta_X\circ \rho \;=\; \rho,
+\qquad
+\epsilon_X\circ \rho \;=\; \mathrm{id}_X.
+\]
+Morphisms $(X,\rho)\to (Y,\sigma)$ are maps $f:X\to Y$ with $\mathbf{D}_O(f)\circ \rho \,=\, \sigma\circ f$. The Eilenberg--Moore category of coalgebras is denoted $\mathbf{Coalg}(\mathbf{D}_O)$.
+\end{definition}
+
+\begin{proposition}[Classical systems as Eilenberg--Moore coalgebras]
+\label{prop:EM-classical}
+For the idempotent comonad $\mathbf{D}_O$ defined above, the Eilenberg--Moore category $\mathbf{Coalg}(\mathbf{D}_O)$ is equivalent to the full subcategory $\mathbf{Proc}_{\mathrm{cl}}(O)\subset \mathbf{Proc}(O)$ of \emph{classical systems in $O$} (objects of the form $\mathsf{C}_O(X)$) and \emph{classical processes} (CPTP maps that restrict to stochastic maps between the commutative algebras). In particular, the forgetful functor
+\[
+U_O:\mathbf{Coalg}(\mathbf{D}_O)\longrightarrow \mathbf{Proc}(O)
+\]
+is comonadic onto $\mathbf{Proc}_{\mathrm{cl}}(O)$, and its essential image is precisely the pointer slice.
+\end{proposition}
+
+\begin{proof}[Proof sketch]
+Because $\mathbf{D}_O$ is idempotent, its Eilenberg--Moore coalgebras are exactly the objects in the essential image of $\mathbf{D}_O$, with structure maps given by the universal splitting $\rho=\mathrm{id}_{\mathbf{D}_O(X)}$; morphisms are precisely those maps preserving the image. The essential image consists of $\mathsf{C}_O(X)$ (commutative algebras), and CPTP maps between commutative algebras are exactly stochastic/Markov maps. Hence $\mathbf{Coalg}(\mathbf{D}_O)\simeq \mathbf{Proc}_{\mathrm{cl}}(O)$.
+\end{proof}
+
+\paragraph{Operational reading.}
+Proposition~\ref{prop:EM-classical} formalizes the intuition that \emph{classicality is a comonadic reflection of quantum processes inside a causal wedge}. The right adjoint $R_O$ to $U_O$ (cofree coalgebra) sends any system/process to its \emph{universal classicalization} under $\mathcal{D}_O$, and $U_O\dashv R_O$ realizes the classical slice as the Eilenberg--Moore category for the local decoherence comonad.
+
+\paragraph{Descent and base change (outlook).}
+Under restriction along causal embeddings $f:O'\hookrightarrow O$, one expects a Beck--Chevalley condition
+\[
+f^\ast \circ \mathbf{D}_O \;\cong\; \mathbf{D}_{O'}\circ f^\ast,
+\]
+ensuring that $\mathbf{Coalg}(\mathbf{D}_{(-)})$ assembles into a prestack of classical structures with effective descent on causal wedges  (cf.\ Section~\ref{sec:causal-nodiag-local}). The global absence of a diagonal then appears as the failure of a global section for this stack (an obstruction to gluing local coalgebras into a single global comonoid).
+
+\subsection{From Global Causality to No Global Diagonal: Locality of Diagonals}
+\label{sec:causal-nodiag-local}
+
+\paragraph{Process-theoretic setting.}
+We work in a symmetric monoidal category of processes $(\mathcal{C},\otimes,I)$ equipped with an \emph{environment structure} (natural discard maps) $\mathsf{discard}_X:X\to I$ and a distinguished class of \emph{causal} morphisms $\Phi:X\to Y$ satisfying $\mathsf{discard}_Y\!\circ\!\Phi=\mathsf{discard}_X$, closed under $\circ$ and $\otimes$ (cf.\ Prop.~\ref{prop:cptp-causal}). We also assume an operational \emph{no-signalling} law: for all objects $A,B$ and causal $\Lambda_A:A\!\to\!A'$,
+\begin{equation}\label{eq:cat-nosig-refined}
+(\mathsf{discard}_{A'}\!\otimes\!\mathrm{id}_B)\,\circ\,(\Lambda_A\!\otimes\!\mathrm{id}_B)
+\;=\;
+(\mathsf{discard}_{A}\!\otimes\!\mathrm{id}_B),
+\end{equation}
+i.e.\ local processing on $A$ cannot alter the marginal on $B$.
+
+\begin{definition}[Global diagonal copier]
+\label{def:global-diagonal-copier}
+A \emph{global diagonal copier} is a natural (with respect to isomorphisms and causal morphisms) family of causal morphisms
+$\Delta_X:X\to X\otimes X$ (natural in $X$) that is counital with respect to discard:
+\begin{equation}\label{eq:counit-laws}
+(\mathsf{discard}_X\!\otimes\!\mathrm{id}_X)\circ \Delta_X \;=\; \mathrm{id}_X
+\;=\;
+(\mathrm{id}_X\!\otimes\!\mathsf{discard}_X)\circ \Delta_X
+\qquad\text{for all }X.
+\end{equation}
+\end{definition}
+
+The naturality in $X$ expresses basis-independence/uniformity; the counit laws~\eqref{eq:counit-laws} ensure that $\Delta$ \emph{copies} in the sense that each marginal equals the input (categorically: $(\Delta_X,\mathsf{discard}_X)$ is a commutative comonoid with counit fixed to discard).
+
+\begin{lemma}[Global diagonal copies/broadcasts the state]
+\label{lem:diagonal-broadcasts}
+Let $\Delta$ be a global diagonal copier. For any state $\omega:X\to I$ (or dually any density operator), both reduced states of $(\Delta_X)$ equal $\omega$; i.e.
+\[
+(\mathsf{discard}_X\!\otimes\!\mathrm{id}_X)\circ \Delta_X \;=\;\mathrm{id}_X
+\quad\text{and}\quad
+(\mathrm{id}_X\!\otimes\!\mathsf{discard}_X)\circ \Delta_X \;=\;\mathrm{id}_X,
+\]
+so $\Delta_X$ \emph{broadcasts} every state on $X$.
+\end{lemma}
+
+\begin{proof}
+This is exactly the content of the counit laws~\eqref{eq:counit-laws}; applying either leg of discard yields the identity on $X$, hence each marginal after $\Delta_X$ equals the input state.
+\end{proof}
+
+\begin{theorem}[Global causality precludes a nontrivial global diagonal]
+\label{thm:causal-nodiagonal-refined}
+Let $(\mathcal{C},\otimes,I)$ satisfy \eqref{eq:cat-nosig-refined} and admit at least one \emph{non-classical} object $Q$ (informally: an object whose state space is non-simplicial, or whose algebra of effects is noncommutative). Then there is no nonzero global diagonal copier $\Delta$ on all objects of $\mathcal{C}$. Equivalently, if a global diagonal copier exists, it restricts to the full subcategory of \emph{classical} objects only.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+By Lemma~\ref{lem:diagonal-broadcasts}, $\Delta_Q$ broadcasts \emph{every} state on $Q$. In generalized probabilistic theories, universal broadcasting exists iff the state space is a simplex (classical); in quantum mechanics, broadcasting is possible only for mutually commuting families of states. Thus $\Delta_Q$ cannot exist on a non-classical $Q$ (Barnum--Caves--Fuchs--Jozsa--Schumacher). Operationally, if $\Delta_Q$ existed, Alice and Bob sharing entanglement could use Alice's choice of incompatible decompositions of the same marginal on $B$ to steer different ensembles remotely; Bob could then apply $\Delta_Q$ repeatedly and perform tomography to distinguish ensembles with arbitrarily high confidence, violating no-signalling \eqref{eq:cat-nosig-refined} (cf.\ Prop.~\ref{prop:clone-signal}). Hence global causality together with non-classicality rules out a nontrivial global diagonal on all objects.
+\end{proof}
+
+\begin{remark}[Relation to \textbf{Hilb} and representation theory]
+In $\mathbf{Hilb}$, naturality with respect to $\mathrm{U}(H)$ forces $\Delta_H$ to be a $\mathrm{U}(H)$-intertwiner $H\Rightarrow H\otimes H$. Since $H\otimes H\cong \mathrm{Sym}^2 H\oplus \wedge^2 H$ contains no copy of $H$ for $\dim H\ge 2$, one has $\mathrm{Hom}_{\mathrm{U}(H)}(H,H\otimes H)=0$, whence $\Delta_H=0$. Theorem~\ref{thm:causal-nodiagonal-refined} recovers this obstruction as a \emph{causal} statement: the only way a global diagonal can exist is on classical (commutative/simplicial) sectors, where it reduces to the usual cartesian diagonal.
+\end{remark}
+
+\paragraph{Local diagonals, decoherence, and light-cone support (AQFT).}
+We now incorporate spacetime locality. Let $\mathcal{A}:\mathcal{O}\to\mathrm{Alg}$ be a Haag--Kastler net assigning von Neumann algebras $\mathcal{A}(O)$ to double cones $O\subset \mathbb{M}^{1,3}$, satisfying isotony, locality (microcausality), and primitive causality (time-slice axiom). A \emph{CP instrument localized in $O$} is a normal completely positive (CP) map on the global algebra that acts trivially outside $O$ and whose Heisenberg action $\mathcal{D}_O$ \emph{decoheres} onto a commutative subalgebra $\mathsf{C}_O\subset \mathcal{A}(O)$ (the pointer algebra). Write $J_{O\to \tilde O}$ for causal propagation from $O$ to a region $\tilde O$ with $O\subset J^-(\tilde O)$.
+
+\paragraph{}
+In this language, basis-dependent Frobenius ``islands'' correspond to commutative pointer subalgebras $\mathsf{C}_O\subset\mathcal{A}(O)$ on which copy/delete is available. The split property identifies a type~I factor between nested regions, explaining why such islands can reproduce cartesian features \emph{locally}. What fails is any \emph{natural} extension across incompatible contexts or spacelike separations: the required intertwiners do not exist. For background on the algebraic formulation of locality and causality, see Haag’s classic treatment~\cite{Haag1992}.
+
+\begin{theorem}[Locality of diagonals under relativistic causality]
+\label{thm:local-diagonal-refined}
+Suppose there exists a CP map $\Delta_{O\to \tilde O}:\mathcal{A}(\tilde O)\to \mathcal{A}(\tilde O)\,\overline{\otimes}\,\mathcal{A}(\tilde O)$ such that for every $C\in \mathsf{C}_O$,
+\begin{equation}\label{eq:copy-pointer}
+\Delta_{O\to \tilde O}\!\big(J_{O\to \tilde O}(C)\big)
+\;=\;
+J_{O\to \tilde O}(C)\otimes J_{O\to \tilde O}(C),
+\end{equation}
+i.e.\ $\Delta_{O\to \tilde O}$ \emph{copies} the classical information created by decoherence in $O$ once it has propagated to $\tilde O$. Then:
+\begin{enumerate}
+\item \textbf{Causal support.} If $\Delta_{O\to \tilde O}$ is causal (trace-preserving), then necessarily $\tilde O \subset J^+(O)$ (the future light cone of $O$).
+\item \textbf{No spacelike copying.} If $\tilde O$ is spacelike to $O$ and \eqref{eq:copy-pointer} holds nontrivially, then either microcausality is violated or no-signalling fails, unless $\mathsf{C}_O$ lies in the center of $\mathcal{A}(O)$ (i.e.\ the copied information is purely classical/central).
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+(1) By primitive causality and the time-slice axiom, operations localized in $O$ can influence observables only within $J^+(O)$. If $\tilde O\not\subset J^+(O)$, one can construct states that agree on the past domain of dependence but differ after applying $\Delta_{O\to\tilde O}$, contradicting relativistic causality.
+
+(2) Assume $\tilde O$ is spacelike to $O$ and \eqref{eq:copy-pointer} holds nontrivially for a non-central $\mathsf{C}_O\subset\mathcal{A}(O)$. Under standard AQFT hypotheses (Haag duality, spectrum condition, nuclearity)~\cite{BuchholzWichmann1986,DoplicherLongo1984}, the \emph{split property} yields a type~I factor $N$ with $\mathcal{A}(O)\subset N \subset \mathcal{A}(\tilde O')'$ whenever $O\Subset\tilde O$; this gives an approximate tensor factorization $\mathcal{A}(O)\,\bar\otimes\,\mathcal{A}(\tilde O')'\hookrightarrow\mathcal{B}(\mathcal{H})$. Any spacelike copying map as in \eqref{eq:copy-pointer} would then extend (by normality) to a vacuum-preserving normal $*$-homomorphism $\pi:\mathcal{A}(O)\to\mathcal{A}(\tilde O)$ intertwining the respective local modular structures. By microcausality and Reeh--Schlieder (vacuum cyclic and separating for local algebras), such a nonlocal intertwiner must act trivially on non-central elements; with type~III local algebras having trivial center, $\pi$ (hence the copy) is trivial. Operationally: choices of incompatible instruments at $O$ prepare distinct pointer decompositions with the same average channel; a nontrivial spacelike copier would let one distinguish these by tomography on the two ``copies'', enabling superluminal signalling. Either way, nontrivial spacelike copying is incompatible with relativistic causality unless $\mathsf{C}_O$ is central.
+\end{proof}
+
+\begin{remark}[Split property, Reeh--Schlieder, and nonlocal intertwiners]
+\label{rem:split-reeh}
+The split property \cite{BuchholzWichmann1986,DoplicherLongo1984} supplies a type~I intermediate factor for suitably separated regions, yielding an approximate tensor factorization that makes precise the idea of ``local cartesian behavior'' inside causal wedges. Reeh--Schlieder \cite{ReehSchlieder1961,Haag1992} ensures the vacuum is cyclic and separating for local algebras, severely constraining normal intertwiners between spacelike separated algebras: vacuum-preserving homomorphisms mapping non-central elements of $\mathcal{A}(O)$ into $\mathcal{A}(\tilde O)$ (with $O\perp \tilde O$) must be trivial. Together, these results turn the categorical no-go ($\Delta_H=0$ as a $\mathrm{U}(H)$-intertwiner) into a spacetime-enforced obstruction: basis-dependent Frobenius ``islands'' (copy/delete on a commutative pointer algebra) can behave cartesianly only \emph{within} causal support; any attempt to extend copying outside $J^+(O)$ would require a nonlocal intertwiner precluded by locality and the Reeh--Schlieder property.
+\end{remark}
+
+\begin{corollary}[Light-cone confinement of local diagonals]
+\label{cor:lightcone-refined}
+Basis-dependent (decoherence-induced) diagonals exist locally on commutative subalgebras and propagate no faster than light: copying of classical information created at $O$ is compatible with causality only within $J^+(O)$. Global, basis-independent diagonals remain forbidden in the presence of any non-classical sector.
+\end{corollary}
+
+\paragraph{Summary.}
+Definition~\ref{def:global-diagonal-copier}, Lemma~\ref{lem:diagonal-broadcasts}, and Theorem~\ref{thm:causal-nodiagonal-refined} show that \emph{global causality} together with \emph{non-classicality} rules out a global diagonal on all objects; only classical sectors admit a copier (cartesian behavior). Theorem~\ref{thm:local-diagonal-refined} and Corollary~\ref{cor:lightcone-refined} add relativistic constraints: \emph{local} diagonals tied to decoherence are confined to the future light cone of the decohering event. This packages the linear--relational architecture (tensor composition, linear CP dynamics) and relativistic causality into a single conclusion: \emph{no global diagonal, local diagonals only within causal support}.
+
+\paragraph{Emergent locality.}
+Taken together, basis-dependent copying (Frobenius structures), the decoherence comonad (with classical coalgebras), and AQFT light-cone confinement show that \emph{classicality is local, functorial, and causally supported}: it assembles as a prestack of local diagonals with effective descent on causal wedges, and its (generic) failure to glue globally—i.e., the absence of a global section—is the categorical signature of background independence.
+General relativity expresses the same limitation geometrically: singularity theorems~\cite{Penrose1965,HawkingPenrose1970} establish that globally complete spacetimes cannot exist under reasonable energy and causality conditions, while topological censorship~\cite{FriedmanSchleichWitt1993,Galloway1999} ensures that information cannot propagate through nontrivial global topology.
+Together with the Geroch topology-change theorem and Hawking’s chronology protection conjecture~\cite{Geroch1967,Hawking1992}, these results articulate an \emph{incompleteness in the IR}: causal wedges are the only globally consistent loci of classical information. This geometric incompleteness is the spacetime mirror of our categorical result—only local diagonals (copy/delete) exist, and they cannot glue to a single global diagonal.
+
+%% from self-reference to self-consistency
+\section{From Self-Reference to Self-Consistency}
+\label{sec:selfref-selfcon}
+
+\paragraph{}
+The categorical picture suggests a shift in emphasis: where cartesian settings enable \emph{self-reference} through duplication (a global diagonal), the quantum setting enforces \emph{self-consistency} through invariance (fixed points) in the absence of uniform copying. Concretely, rather than forming a description that refers to itself by cloning its input, a quantum process seeks states that are \emph{stable} under the dynamics or information flow at hand.
+
+\paragraph{Unitary invariants as reflexive states.}
+For a unitary $U:H\to H$, a state $|\psi\rangle$ with $U|\psi\rangle=|\psi\rangle$ is an eigenstate of eigenvalue $1$. More generally, the spectral decomposition $U=\sum_j e^{i\theta_j} P_j$ singles out invariant subspaces $P_jH$; when $\theta_j=0$, $P_jH$ is pointwise fixed. This is the simplest notion of reflexivity: the state is its own image. In general, eigenstates (and decoherence-selected pointer states) play the role of \emph{self-consistent descriptions} under a given evolution or measurement context. No copying is needed; what matters is the \emph{coincidence} of state and image.
+
+\paragraph{Fixed points of channels.}
+More generally, quantum dynamics are modeled by completely positive trace-preserving (CPTP) maps $\Lambda:\mathcal{D}(H)\to\mathcal{D}(H)$ on the convex set $\mathcal{D}(H)$ of density operators. Fixed points $\rho^\star$ with $\Lambda(\rho^\star)=\rho^\star$ represent self-consistent states of the dynamics (steady states, noiseless codes, or stationary distributions).
+
+\begin{proposition}[Fixed points of CPTP maps]
+\label{prop:cptp-fixed}
+Every CPTP map $\Lambda:\mathcal{D}(H)\to\mathcal{D}(H)$ on a finite-dimensional Hilbert space admits at least one fixed point $\rho^\star\in\mathcal{D}(H)$.
+\end{proposition}
+
+\begin{proof}[Proof sketch]
+The set $\mathcal{D}(H)$ is nonempty, compact, and convex. For any $\rho_0$, the Ces\`aro averages $\mu_N:=\frac{1}{N}\sum_{k=0}^{N-1}\Lambda^k(\rho_0)$ lie in $\mathcal{D}(H)$. Compactness yields a convergent subsequence $\mu_{N_j}\to \rho^\star$. Continuity gives $\Lambda(\mu_{N_j})-\mu_{N_j}=\frac{1}{N_j}(\Lambda^{N_j}(\rho_0)-\rho_0)\to 0$, hence $\Lambda(\rho^\star)=\rho^\star$.
+\end{proof}
+
+\paragraph{Decoherence as projection onto a classical substructure.}
+A canonical class of channels are \emph{decoherence maps} relative to a chosen orthonormal basis $\mathcal{B}=\{|i\rangle\}$:
+\begin{equation}
+\mathcal{D}_{\mathcal{B}}(\rho) \;:=\; \sum_i P_i \rho P_i,
+\qquad P_i:=|i\rangle\!\langle i|.
+\label{eq:decoherence}
+\end{equation}
+One has $\mathcal{D}_{\mathcal{B}}\circ \mathcal{D}_{\mathcal{B}}=\mathcal{D}_{\mathcal{B}}$ (idempotence), so $\mathrm{Fix}(\mathcal{D}_{\mathcal{B}})$ is exactly the set of density matrices diagonal in $\mathcal{B}$---a commutative ``classical'' subalgebra. This realizes the passage from quantum indeterminacy to classical definiteness \emph{as a fixed-point condition}: states stable under the environment-induced channel are precisely those compatible with the selected classical structure.
+
+\paragraph{Compatibility with local diagonals.}
+Let $\delta_{\mathcal{B}}$ be the basis-dependent copier from~\eqref{eq:basis-copy}. Then on fixed points of $\mathcal{D}_{\mathcal{B}}$,
+\[
+(\mathcal{D}_{\mathcal{B}}\otimes \mathcal{D}_{\mathcal{B}})\,\delta_{\mathcal{B}} \;=\; \delta_{\mathcal{B}}\,\mathcal{D}_{\mathcal{B}} \;=\; \delta_{\mathcal{B}},
+\]
+exhibiting $\delta_{\mathcal{B}}$ as a ``local diagonal'' \emph{stable} under decoherence. Thus, while no global diagonal exists, decoherence projects onto a context in which copying is admissible and consistent.
+
+\paragraph{Indeterminacy as the analogue of incompleteness.}
+In logic, diagonalization exposes limits of axiomatic completeness: some truths are unprovable without inconsistency. In quantum theory, the absence of a global diagonal yields \emph{complementarity}: not all properties admit simultaneous sharp values, and measurement back-action forbids a single, uniform self-description that preserves all coherences. The structural role is parallel: both regimes impose a boundary on global self-application to preserve consistency---in logic, the boundary appears as incompleteness; in quantum physics, as indeterminacy and contextuality. In both cases, \emph{self-consistency} (fixed points, context-relative classicality) replaces \emph{self-description by duplication}.
+
+\begin{remark}[Recoverability and approximate locality]
+In composite regions $A\!-\!B\!-\!C$, small conditional mutual information $I(A\!:\!C|B)$ implies approximate recoverability (Petz/Fawzi--Renner), i.e.\ a near-fixed-point property of the dynamics restricted to $B$. This aligns with the comonadic picture: where states are approximately Markovian, local classicality is robust and copying behaves cartesianly \emph{in context}, yet remains obstructed globally.
+\end{remark}
+
+\subsection{No-Coaction Principle and a Kinematic Filter for UV Completions}
+\label{sec:no-coaction-uv-filter}
+
+\paragraph{Motivation.}
+Up to now, we have shown that causal, monoidal (non-cartesian) quantum theories admit no \emph{global} diagonal, while \emph{local} diagonals emerge only within causal wedges via decoherence. A natural question then arises: could some physical structure—most temptingly, a long-range or “background” field—supply a \emph{global} classical reference that effectively reintroduces uniform copying? Operationally, any such background would function as a globally \emph{copyable label}, i.e.\ as a uniform way to tag all systems with classical data that can be read without disturbance. Categorically, this is precisely what a \emph{natural Sweedler coaction} encodes: a family $\rho_X:X\!\to\!X\!\otimes\!C$ that is causal and covariant, assigning to every object a duplicable classical register $C$.
+
+\paragraph{Aim.}
+Now we formalize the prohibition of such background labels as a \emph{No-Coaction Principle}. Informally: in a causal, background-independent setting (e.g.\ with diffeomorphism/gauge covariance and no global tensor factorization), there is no nontrivial natural coaction on all systems. We then read this as a \emph{kinematic filter} for ultraviolet completions: any proposal that reintroduces a globally copyable classical structure (preferred frame, universal clock/foliation, fixed ether-like fields) thereby reinstates a global diagonal and falls outside the causal, background-independent regime developed above. The formal statement and consequences follow.
+
+\paragraph{Natural coactions as global copy structures.}
+A (Sweedler) \emph{coaction} of a commutative coalgebra $C$ on an object $X$ is a morphism
+\[
+\rho_X:\; X \longrightarrow X \otimes C,\qquad
+\rho_X(x)=x_{(0)}\!\otimes x_{(1)},
+\]
+satisfying the usual coassociativity and counit laws. A \emph{natural coaction} is a family $\{\rho_X\}_X$ with
+\[
+(f\otimes \mathrm{id}_C)\,\rho_X \;=\; \rho_Y\, f\qquad \text{for all } f:X\to Y,
+\]
+and we further require it to be \emph{causal} (compatible with discard) and \emph{covariant} under the relevant symmetry/covariance groupoid (e.g., unitary symmetries, spacetime embeddings, diffeomorphisms). Operationally, such a $\rho$ assigns to every system a \emph{globally copyable classical label} in $C$.
+
+\begin{theorem}[No-Coaction Principle]
+\label{thm:no-coaction}
+Let $(\mathcal{C},\otimes,I)$ be a causal symmetric monoidal process category with an environment structure, locally covariant under embeddings of causal regions, and containing at least one non-classical object (non-simplicial state space / noncommutative effect algebra). Suppose moreover that the physical state spaces admit no canonical global tensor factorization (only local split inclusions). Then there exists \emph{no nontrivial} natural, causal, covariant coaction
+\[
+\rho_X:\; X \longrightarrow X\otimes C
+\]
+on all objects of $\mathcal{C}$ for any commutative coalgebra $C$. Equivalently, any such coaction is trivial on non-classical objects ($\rho_X = \mathrm{id}_X\otimes \eta$ with $\eta:I\to C$).
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+A natural, causal coaction with counit realizes a \emph{uniform broadcaster} for the classical labels in $C$; by the No-Global-Diagonal theorem (Section~\ref{sec:causal-nodiag-local}), global broadcasting exists only on classical (simplicial/commutative) sectors. Covariance further forces $\rho_X$ to be an intertwiner for the symmetry/covariance groupoid; representation-theoretic constraints (and non-factorization of physical state spaces) imply $\mathrm{Hom}_{\mathrm{cov}}(X,\,X\otimes C)=0$ for non-classical $X$, so $\rho_X$ must be trivial. Hence no nontrivial natural coaction exists on all objects.
+\end{proof}
+
+\begin{remark}[Gravity as a rigidifier]
+In locally covariant, diffeomorphism-invariant theories, naturality is taken with respect to spacetime embeddings/diffeomorphisms. The induced intertwiner condition further shrinks $\mathrm{Hom}_{\mathrm{cov}}(X,X\otimes C)$, and, together with nonfactorization (split only locally) and dressing/edge modes, forces any putative global coaction to be trivial on non-classical sectors. Thus gravity strengthens, rather than weakens, the No-Coaction conclusion. Related arguments show that a purely classical gravitational field 
+cannot consistently mediate entanglement or information transfer without violating quantum-causal constraints~\cite{Galley2022}. The emergence of boundary degrees of freedom (edge modes)~\cite{DonnellyWall2016} reinforces that no global coaction can exist: physical information resides only 
+in relational, gauge-invariant combinations across causal boundaries. Since GR enforces geodesic incompleteness, topological censorship, and horizon-induced coarse-graining, gravity not only refrains from restoring global cartesian structure—it actively prevents it. Thus any UV completion consistent with gravity must respect the kinematic indefinability of a global coaction (no global diagonal), yielding “IR incompleteness” as a structural feature rather than a technical limitation.
+\end{remark}
+
+\paragraph{Kinematic filter for UV completions.}
+Theorem~\ref{thm:no-coaction} can be read as a \emph{kinematic consistency condition} for UV completions:
+
+\begin{corollary}[UV No-Coaction Filter]
+\label{cor:uv-filter}
+Any UV completion that introduces a \emph{globally copyable} classical structure---equivalently, a nontrivial natural coaction $\rho_X:X\!\to\!X\!\otimes\!C$ (e.g.\ a preferred foliation, background frame/field, or universal classical register)---reinstates a global diagonal and thereby violates the causal/covariant structure. Such models are \emph{background-dependent} in the categorical sense and fail the No-Coaction filter.
+\end{corollary}
+
+\paragraph{Examples (background-dependent models fail the filter).}
+\begin{itemize}
+\item \emph{Preferred-frame or ether theories} (e.g.\ global unit timelike fields): the background field defines a universal classical label algebra $C$, yielding a natural coaction $\rho_X$; this is excluded by Cor.~\ref{cor:uv-filter}.
+\item \emph{Preferred-foliation theories} (e.g.\ global time functions): the foliation variable acts as a copyable global parameter ($C\simeq \mathrm{Fun}(\mathbb{R})$), again supplying a forbidden coaction.
+\item \emph{Lorentz-violating backgrounds} (fixed tensors): the background tensors provide global classical data that coact on all local systems.
+\end{itemize}
+
+\paragraph{Admissible classes.}
+By contrast, \emph{relational}, background-independent frameworks pass the filter:
+\begin{itemize}
+\item Locally covariant/algebraic QFT: only \emph{local} classicality (pointer algebras) as coalgebras of the \emph{decoherence comonad} (Section~\ref{sec:decoherence-comonad}); no global coaction.
+\item Holographic/code-subspace models: redundancy is isometric encoding (QEC), not cloning; no global coaction exists, only wedge-local classical recovery.
+\item Causal-site/process frameworks obeying affine, no-signalling dynamics: monoidal composition without cartesian global copying.
+\end{itemize}
+
+\paragraph{Interpretation.}
+The No-Coaction Principle restates \emph{background independence} as a categorical kinematic constraint: there is no diffeomorphism-/covariance-invariant way to tag all systems with a copyable classical label. The UV filter then says any proposal that \emph{does} supply such a label is outside the causal, background-independent sector described by the No-Global-Diagonal framework. Nonlinear dynamical extensions of quantum theory~\cite{Gisin1990,Polchinski1991} typically reintroduce signalling and hence violate causal structure.
+
+%% philosophical implications
+\section{Philosophical and Interpretational Implications}
+\label{sec:philosophy}
+
+\paragraph{No global diagonal $\Longleftrightarrow$ background independence.}
+The categorical statement ``there is no natural global diagonal'' has a direct physical reading: there is no absolute, globally copyable reference structure. A global diagonal (or natural coaction) would endow every system with the same classical tag and so amount to a background frame or foliation. Its absence therefore forces background independence. What survives are \emph{local} classical structures—pointer algebras and their copy/delete maps—defined only within causal domains and glued where compatible. The impossibility of extending these to a single global copier is not a technicality; it is the operational content of a background-independent theory.
+
+\paragraph{No-cloning from the linear--relational architecture (not an ad hoc ban).}
+The absence of a global diagonal in quantum theory is best read as a consequence of the theory's \emph{linear--relational} architecture: composition is tensorial (producing entanglement), dynamics are linear and reversible (unitary on pure states, CPTP on mixed states), and indistinguishability is encoded representation-theoretically. Categorically, this appears as the fact that \textbf{Hilb} is symmetric monoidal but not cartesian, so there is no natural family $\Delta_H:H\!\to\!H\otimes H$. Representation-theoretically, naturality entails $(U\!\otimes\!U)\Delta_H=\Delta_HU$ for all $U\in\mathrm{U}(H)$; thus $\Delta_H$ would be an intertwiner $H\!\Rightarrow\!H\otimes H$. For $\dim H\ge 2$ one has $H\otimes H\cong \mathrm{Sym}^2H\oplus\wedge^2 H$ with no copy of $H$, hence $\mathrm{Hom}_{\mathrm{U}(H)}(H,H\otimes H)=0$ and $\Delta_H=0$. Operationally, linearity and superposition forbid cloning because $(\alpha|\psi\rangle+\beta|\phi\rangle)^{\otimes 2}$ contains cross-terms that no linear map can produce from $\alpha|\psi\rangle+\beta|\phi\rangle$ without state-dependent behavior. In short: no-cloning follows from the core structural commitments of quantum mechanics; it is not an auxiliary consistency patch.
+
+\paragraph{Reflexivity as invariance rather than self-description.}
+The linear--relational reading replaces cartesian self-description (copying ``what is'') with \emph{reflexivity by invariance}: the salient question is whether a state is a fixed point of a process. For a unitary $U$, eigenstates with eigenvalue $1$ satisfy $U|\psi\rangle=|\psi\rangle$; for a channel $\Lambda$, fixed points $\rho^\star=\Lambda(\rho^\star)$ form the self-consistent sector of the dynamics (cf.\ Proposition~\ref{prop:cptp-fixed}). Decoherence maps $\mathcal{D}_{\mathcal{B}}$ project onto commutative subalgebras where states are stable and information behaves classically. Thus ``self-reference'' is recast as \emph{stability under the relevant morphisms}, not duplication of arbitrary quantum data.
+
+\paragraph{Relational and contextual readings grounded in structure.}
+Relational and information-centric interpretations can be anchored in this architecture: without a global diagonal, any act that resembles self-application must be \emph{mediated by a context}. Mathematically, a context is a commutative dagger Frobenius algebra (a ``classical structure'') picking out a basis $\mathcal{B}$ with copy/delete maps $(\delta_{\mathcal{B}},\varepsilon_{\mathcal{B}})$ and a decoherence channel $\mathcal{D}_{\mathcal{B}}$ for which $\mathrm{Fix}(\mathcal{D}_{\mathcal{B}})$ is precisely the diagonal subalgebra. Within such a context, copying is admissible and cartesian-like; globally, incompatibility between contexts (noncommutativity) blocks any attempt to naturalize these local diagonals.
+
+\paragraph{Topos- and logic-facing perspective: locality of truth mirrors locality of diagonals.}
+Topos-theoretic approaches replace a single global Boolean algebra of propositions with a presheaf of local logics indexed by contexts. Our picture mirrors the topos-theoretic account of truth via presheaves of local logics~\cite{DoeringIsham2008}: cartesian features (diagonals, evaluation) do not exist globally in the quantum category, but they reappear \emph{internally} within commutative subalgebras. Lawvere-style diagonalization is thus a \emph{local} phenomenon in quantum theory: available inside a context, obstructed in the global quantum topos where gluing conditions fail.
+
+\paragraph{Information-theoretic reconstructions and generalized theories.}
+In convex-operational (GPT) frameworks, cloning/broadcasting theorems separate classical (simplicial) from non-classical (non-simplicial) state spaces: universal broadcasting exists iff the state space is a simplex. Quantum theory is non-simplicial and monoidal with purification; from these structural inputs, no-cloning/no-broadcasting follow as theorems. Our lens unifies these results with the categorical one: \emph{non-cartesianness} (tensor composition, non-simplicial convexity, linear dynamics) entails the absence of a global diagonal, with classicality recovered precisely on the commuting/simplicial slices.In particular, universal broadcasting characterizes simplicial (classical) state spaces in GPTs~\cite{BarnumEtAl2007}.
+
+\paragraph{Outlook: structural questions, not workarounds.}
+The guiding questions become structural: (i) How do intertwiners $\mathrm{Hom}_{G}(H,H\otimes H)$ for proper subgroups $G\!\subset\!\mathrm{U}(H)$ (e.g.\ under superselection) classify \emph{relative} or \emph{approximate} diagonals? (ii) How does the lattice of fixed-point algebras of physically relevant channels organize the ``sheaf of contexts,'' and how does this relate to the poset of commutative $C^\ast$-subalgebras? (iii) Can one quantify ``degree of non-cartesianness'' via optimal cloning fidelities or resource monotones, linking approximate copying to symmetry-breaking or noise structure? These are architectural, not ad hoc, inquiries: they aim to chart how the linear--relational core of quantum theory governs the emergence of local cartesian behavior and the impossibility of global duplication.
+
+\subsection{Causality from the Linear--Relational Architecture}
+\label{sec:causality}
+
+\paragraph{Aim.}
+This section recasts the structural no-global-diagonal (Section~\ref{sec:structural-noglobal}) in operational terms: linear CPTP causality already entails no-signalling; a uniform copier would violate it outright.
+
+\paragraph{Environment structure and causality.}
+In the CPM construction over \textbf{Hilb}, objects are finite-dimensional Hilbert spaces and morphisms are completely positive (CP) maps, with the tensor product as monoidal composition. For each object $H$, there is a distinguished ``discard'' (environment) morphism $\mathsf{discard}_H: H \to I$, which on density operators is $\mathsf{discard}_H(\rho)=\operatorname{Tr}(\rho)$. A morphism $\Phi:A\to B$ is called \emph{causal} if
+\begin{equation}
+\mathsf{discard}_B \circ \Phi \;=\; \mathsf{discard}_A.
+\label{eq:causal-eqn}
+\end{equation}
+Operationally, this states that ``throwing away the output'' yields the same scalar as ``throwing away the input,'' i.e.\ $\Phi$ preserves total probability.
+
+\begin{proposition}[CPTP $\Leftrightarrow$ causal]
+\label{prop:cptp-causal}
+In $\mathrm{CPM}[\mathbf{Hilb}]$, causal morphisms are exactly the completely positive trace-preserving (CPTP) maps. Moreover, the class of causal morphisms is closed under composition and tensor product.
+\end{proposition}
+
+\begin{proof}[Proof sketch]
+For $\Phi$ represented by a CP map on density operators, \eqref{eq:causal-eqn} is precisely $\operatorname{Tr}(\Phi(\rho))=\operatorname{Tr}(\rho)$ for all $\rho$, i.e.\ trace-preservation. Closure under composition and tensor product follows from linearity and the monoidal structure of CPM.
+\end{proof}
+
+\paragraph{No-signalling from locality + linearity.}
+Let $\rho_{AB}$ be a bipartite state and let $\Lambda_A:A\!\to\!A'$ be CPTP. The reduced state on $B$ is unaffected by local processing on $A$:
+\begin{equation}
+\operatorname{Tr}_{A'}\!\big[(\Lambda_A\otimes \mathrm{id}_B)(\rho_{AB})\big]\;=\;\operatorname{Tr}_{A}(\rho_{AB}).
+\label{eq:nosig}
+\end{equation}
+A succinct proof uses the dual map $\Lambda_A^\ast$ (unital): for any observable $M_B$ on $B$,
+\[
+\operatorname{Tr}\!\Big[ M_B \,\operatorname{Tr}_{A'}\!\big((\Lambda_A\!\otimes\!\mathrm{id}_B)\rho_{AB}\big)\Big]
+= \operatorname{Tr}\!\big[ (\Lambda_A^\ast(I_{A'})\!\otimes\!M_B)\,\rho_{AB}\big]
+= \operatorname{Tr}\!\big[ (I_A\!\otimes\!M_B)\,\rho_{AB}\big],
+\]
+which equals $\operatorname{Tr}[M_B\,\operatorname{Tr}_A(\rho_{AB})]$; since this holds for all $M_B$, \eqref{eq:nosig} follows. Thus \emph{linearity} (affinity on states), \emph{complete positivity}, and \emph{monoidal locality} entail operational no-signalling.
+
+\begin{proposition}[Uniform cloning $\Rightarrow$ signalling]
+\label{prop:clone-signal}
+If there existed a \emph{uniform} CPTP cloning channel $\Delta_A$ with $\Delta_A(\rho)=\rho\otimes \rho$ for all states $\rho$ on $A$, then there would be a signalling protocol between space-like separated parties sharing entanglement.
+\end{proposition}
+
+\begin{proof}[Proof sketch]
+Suppose Alice and Bob share an entangled state. By choosing between two noncommuting measurements on $A$, Alice remotely prepares different ensemble decompositions of the same reduced state on $B$. If Bob possessed a uniform cloner $\Delta_B$, he could generate arbitrarily many copies of his local system from a single specimen and perform tomography to distinguish the ensembles with arbitrarily high confidence, thereby inferring Alice's choice instantaneously. This contradicts \eqref{eq:nosig}. Hence uniform cloning is incompatible with causality (cf.\ arguments by Gisin (1990) and Polchinski (1991) in the presence of nonlinear evolutions~\cite{Gisin1990,Polchinski1991}).
+\end{proof}
+
+\paragraph{No global diagonal as a causal invariant.}
+A \emph{natural} family $\{\Delta_H:H\!\to\!H\otimes H\}_H$ would, if physically realizable, be causal (trace-preserving) and local. Propositions~\ref{prop:cptp-causal} and \ref{prop:clone-signal} then force a contradiction with \eqref{eq:nosig}. Categorically, the earlier representation-theoretic obstruction already shows $\Delta_H=0$ for all $H$, i.e.\ there is \emph{no natural diagonal}. Read operationally, the linear--relational core (tensor composition $+$ linear CPTP dynamics) thus enforces causality; the absence of a global diagonal is a \emph{consequence} of this core, not an auxiliary ban.
+
+\paragraph{Remarks on UV completions.}
+In extensions/UV completions that retain: (i) tensor (non-cartesian) composition of systems, (ii) linear/affine dynamics on states (CPTP at the effective level), and (iii) no-signalling, the foregoing derivation persists and \emph{no global diagonal} (hence no-cloning) remains. This includes algebraic QFT (where type III local algebras and the split property further constrain factorization), gauge theories (with Gauss-law constraints and edge modes), and holographic/code-subspace settings (cartesian behavior emerges only inside protected subspaces). By contrast, proposals introducing \emph{nonlinear} evolution or deterministic postselection typically re-enable cloning/state discrimination and hence signalling, conflicting with causal structure. Even in non-Hermitian or $\mathcal{PT}$-symmetric extensions of quantum theory,  the fundamental no-go theorems (no-cloning, no-deleting, no-signalling) 
+remain valid when dynamics are consistently normalized~\cite{JuEtAl2019}. The upshot is a litmus test for UV proposals: preserving the linear--relational architecture preserves causality and precludes a global diagonal; abandoning it invites acausality.
+
+%% conclusion
+\section{Conclusion}
+\label{sec:conclusion}
+
+\paragraph{}
+We have proposed a simple dictionary: in cartesian settings, a natural diagonal enables global self-application and yields pervasive fixed points (Lawvere), underwriting classical self-reference; in quantum settings, the monoidal---non-cartesian---structure of composition blocks any natural diagonal, and the resulting \emph{no-cloning} and \emph{no-broadcasting} theorems forbid uniform self-replication of unknown states. Read categorically, these are two faces of a single metaprinciple: a \emph{diagonalization constraint} that prevents universal self-application in order to preserve consistency.
+
+\paragraph{}
+This lens reframes the contrast between classical and quantum information. Classical theories admit a global copier and therefore support unqualified self-reference; quantum theory admits only \emph{local} diagonals tied to classical structures (commutative Frobenius algebras), where copying is basis-dependent and context-relative. Accordingly, quantum theory replaces self-description by duplication with \emph{self-consistency} by invariance: fixed points of unitaries and channels, and decoherence-selected pointer states, serve as the stable ``reflexive'' configurations compatible with a given context.
+
+\paragraph{}
+On this view, logical incompleteness and quantum indeterminacy are structurally analogous. In logic, diagonalization exposes limits to completeness without inconsistency; in quantum theory, the absence of a global diagonal manifests as complementarity and the impossibility of universal state duplication. Both articulate the same boundary: the universe does not afford a complete, consistent, context-free representation of itself.
+
+\paragraph{}
+Our contribution is primarily conceptual rather than technical: we synthesize known categorical facts to make explicit the correspondence between Lawvere-style diagonalization and the quantum no-cloning constraint, highlighting basis-dependent classical structures as ``local diagonals.'' This perspective suggests concrete directions: characterize lattices of fixed-point subalgebras as a semantics of contexts; relate naturality obstructions to reconstruction axioms in generalized probabilistic theories; and study how approximate cloning/fidelity bounds quantify departures from cartesianness. 
+
+\paragraph{}
+In short, classical logic’s global diagonalization and quantum theory’s prohibition of a natural diagonal express a common deep structure. The former yields self-reference and incompleteness; the latter yields contextuality, complementarity, and no-cloning. Both enforce a consistency boundary on self-application, and both point to reflexive---rather than self-replicative---forms of ``being about oneself'' in mathematics and in physics. Finally, the arrangement of local diagonals (classical structures) across causal wedges offers an operational account of emergent spacetime: a sheaf of locally cartesian behavior with a nontrivial obstruction to global gluing. The No-Coaction filter then serves as a UV-consistency test: any proposal that reinstates a globally copyable background falls outside the causal, background-independent sector described here.
+
+\section*{Declarations}
+
+\noindent\textbf{Funding.}
+No external funding was received for this work.
+
+\medskip
+\noindent\textbf{Competing interests.}
+The author declares no competing interests.
+
+\medskip
+\noindent\textbf{Data and code availability.}
+Not applicable. No new datasets or analysis code were generated.
+
+\medskip
+\noindent\textbf{Author contributions.}
+Sole author: conceptualization, methodology, formal analysis, and writing.
+
+\medskip
+\noindent\textbf{Acknowledgments.}
+The author used large language models for drafting, proofing, and \LaTeX{} formatting assistance, and for critical review suggestions: ChatGPT (GPT-5). The author is responsible for the content and any errors.
+
+\medskip
+\noindent\textbf{Provenance and versioning.}
+Repository:\\ \commiturl. 
+Compiled with pdf\TeX{} 1.40.27 (TeX Live 2025). 
+
+\medskip
+\noindent\textbf{License.}
+This preprint is distributed under the Creative Commons Attribution 4.0 International (CC BY 4.0) license.
+
+
+\bibliographystyle{plainnat}
+\bibliography{NoGlobalDiagonal}
+
+
+\end{document}
