@@ -2,6 +2,7 @@
 \usepackage[a4paper,margin=1in]{geometry}
 \usepackage{amsmath,amssymb,amsthm}
 \usepackage[hidelinks]{hyperref}
+\usepackage{orcidlink}
 \usepackage{booktabs}
 \usepackage[numbers,sort&compress]{natbib}
 \usepackage{enumitem}
@@ -42,7 +43,7 @@
 \newcommand{\commiturl}{\url{https://github.com/nahuaque/inkstone-ember-archive/commit/\shortcommithash}}
 
 \title{No Global Diagonal: From Logical Diagonalization to Quantum No-Cloning, Local Classicality, and a No-Coaction UV Filter}
-\author{Lorand Bruhacs}
+\author{Lorand Bruhacs\,\orcidlink{0009-0004-6751-0715}}
 \date{\normalsize \today}
 
 \begin{document}
@@ -260,7 +261,7 @@ Taking inner products for two arbitrary unit vectors $|\phi\rangle,|\psi\rangle$
 \[
 \langle \phi|\psi\rangle \;=\; \big\langle \phi|\psi\big\rangle^2,
 \]
-so $\langle \phi|\psi\rangle \in \{0,1\}$, a contradiction unless $|\phi\rangle,|\psi\rangle$ are identical or orthogonal. Thus no such $U$ exists; copying can succeed only on a fixed orthonormal set, not uniformly on all states~\cite{WoottersZurek1982}. This is the standard no-cloning theorem~\cite{WoottersZurek1982,Dieks1982},, which the categorical argument above elevates to a \emph{naturality obstruction}: there is no basis-independent copier (Abramsky, 2008; Coecke \& Kissinger, 2017).
+so $\langle \phi|\psi\rangle \in \{0,1\}$, a contradiction unless $|\phi\rangle,|\psi\rangle$ are identical or orthogonal. Thus no such $U$ exists; copying can succeed only on a fixed orthonormal set, not uniformly on all states~\cite{WoottersZurek1982}. This is the standard no-cloning theorem~\cite{WoottersZurek1982,Dieks1982}, which the categorical argument above elevates to a \emph{naturality obstruction}: there is no basis-independent copier (Abramsky, 2008; Coecke \& Kissinger, 2017).
 
 \paragraph{No-broadcasting (mixed states).}
 For density operators, a CPTP channel that \emph{broadcasts} a set $\mathcal{S}$ of states exists if and only if all states in $\mathcal{S}$ mutually commute (i.e.\ are jointly diagonalizable). Noncommuting families cannot be broadcast~\cite{BarnumEtAl1996}. This aligns with the categorical picture: only \emph{classical} (commutative) subalgebras admit copying-like operations.
@@ -480,7 +481,7 @@ Let $(\mathcal{C},\otimes,I)$ satisfy \eqref{eq:cat-nosig-refined} and admit at 
 \end{theorem}
 
 \begin{proof}[Proof sketch]
-By Lemma~\ref{lem:diagonal-broadcasts}, $\Delta_Q$ broadcasts \emph{every} state on $Q$. In generalized probabilistic theories, universal broadcasting exists iff the state space is a simplex (classical); in quantum mechanics, broadcasting is possible only for mutually commuting families of states. Thus $\Delta_Q$ cannot exist on a non-classical $Q$ (Barnum--Caves--Fuchs--Jozsa--Schumacher). Operationally, if $\Delta_Q$ existed, Alice and Bob sharing entanglement could use Alice's choice of incompatible decompositions of the same marginal on $B$ to steer different ensembles remotely; Bob could then apply $\Delta_Q$ repeatedly and perform tomography to distinguish ensembles with arbitrarily high confidence, violating no-signalling \eqref{eq:cat-nosig-refined} (cf.\ Prop.~\ref{prop:clone-signal}). Hence global causality together with non-classicality rules out a nontrivial global diagonal on all objects.
+By Lemma~\ref{lem:diagonal-broadcasts}, $\Delta_Q$ broadcasts \emph{every} state on $Q$. In generalized probabilistic theories, universal broadcasting exists iff the state space is a simplex (classical); in quantum mechanics, broadcasting is possible only for mutually commuting families of states. Thus $\Delta_Q$ cannot exist on a non-classical $Q$ (Barnum--Caves--Fuchs--Jozsa--Schumacher)~\cite{BarnumEtAl1996}. Operationally, if $\Delta_Q$ existed, Alice and Bob sharing entanglement could use Alice's choice of incompatible decompositions of the same marginal on $B$ to steer different ensembles remotely; Bob could then apply $\Delta_Q$ repeatedly and perform tomography to distinguish ensembles with arbitrarily high confidence, violating no-signalling \eqref{eq:cat-nosig-refined} (cf.\ Prop.~\ref{prop:clone-signal}). Hence global causality together with non-classicality rules out a nontrivial global diagonal on all objects.
 \end{proof}
 
 \begin{remark}[Relation to \textbf{Hilb} and representation theory]
@@ -488,7 +489,7 @@ In $\mathbf{Hilb}$, naturality with respect to $\mathrm{U}(H)$ forces $\Delta_H$
 \end{remark}
 
 \paragraph{Local diagonals, decoherence, and light-cone support (AQFT).}
-We now incorporate spacetime locality. Let $\mathcal{A}:\mathcal{O}\to\mathrm{Alg}$ be a Haag--Kastler net assigning von Neumann algebras $\mathcal{A}(O)$ to double cones $O\subset \mathbb{M}^{1,3}$, satisfying isotony, locality (microcausality), and primitive causality (time-slice axiom). A \emph{CP instrument localized in $O$} is a normal completely positive (CP) map on the global algebra that acts trivially outside $O$ and whose Heisenberg action $\mathcal{D}_O$ \emph{decoheres} onto a commutative subalgebra $\mathsf{C}_O\subset \mathcal{A}(O)$ (the pointer algebra). Write $J_{O\to \tilde O}$ for causal propagation from $O$ to a region $\tilde O$ with $O\subset J^-(\tilde O)$.
+We now incorporate spacetime locality. Let $\mathcal{A}:\mathcal{O}\to\mathrm{Alg}$ be a Haag--Kastler net~\cite{HaagKastler1964} assigning von Neumann algebras $\mathcal{A}(O)$ to double cones $O\subset \mathbb{M}^{1,3}$, satisfying isotony, locality (microcausality), and primitive causality (time-slice axiom). A \emph{CP instrument localized in $O$} is a normal completely positive (CP) map on the global algebra that acts trivially outside $O$ and whose Heisenberg action $\mathcal{D}_O$ \emph{decoheres} onto a commutative subalgebra $\mathsf{C}_O\subset \mathcal{A}(O)$ (the pointer algebra). Write $J_{O\to \tilde O}$ for causal propagation from $O$ to a region $\tilde O$ with $O\subset J^-(\tilde O)$.
 
 \paragraph{}
 In this language, basis-dependent Frobenius ``islands'' correspond to commutative pointer subalgebras $\mathsf{C}_O\subset\mathcal{A}(O)$ on which copy/delete is available. The split property identifies a type~I factor between nested regions, explaining why such islands can reproduce cartesian features \emph{locally}. What fails is any \emph{natural} extension across incompatible contexts or spacelike separations: the required intertwiners do not exist. For background on the algebraic formulation of locality and causality, see Haag’s classic treatment~\cite{Haag1992}.
@@ -511,7 +512,7 @@ i.e.\ $\Delta_{O\to \tilde O}$ \emph{copies} the classical information created b
 \begin{proof}[Proof sketch]
 (1) By primitive causality and the time-slice axiom, operations localized in $O$ can influence observables only within $J^+(O)$. If $\tilde O\not\subset J^+(O)$, one can construct states that agree on the past domain of dependence but differ after applying $\Delta_{O\to\tilde O}$, contradicting relativistic causality.
 
-(2) Assume $\tilde O$ is spacelike to $O$ and \eqref{eq:copy-pointer} holds nontrivially for a non-central $\mathsf{C}_O\subset\mathcal{A}(O)$. Under standard AQFT hypotheses (Haag duality, spectrum condition, nuclearity)~\cite{BuchholzWichmann1986,DoplicherLongo1984}, the \emph{split property} yields a type~I factor $N$ with $\mathcal{A}(O)\subset N \subset \mathcal{A}(\tilde O')'$ whenever $O\Subset\tilde O$; this gives an approximate tensor factorization $\mathcal{A}(O)\,\bar\otimes\,\mathcal{A}(\tilde O')'\hookrightarrow\mathcal{B}(\mathcal{H})$. Any spacelike copying map as in \eqref{eq:copy-pointer} would then extend (by normality) to a vacuum-preserving normal $*$-homomorphism $\pi:\mathcal{A}(O)\to\mathcal{A}(\tilde O)$ intertwining the respective local modular structures. By microcausality and Reeh--Schlieder (vacuum cyclic and separating for local algebras), such a nonlocal intertwiner must act trivially on non-central elements; with type~III local algebras having trivial center, $\pi$ (hence the copy) is trivial. Operationally: choices of incompatible instruments at $O$ prepare distinct pointer decompositions with the same average channel; a nontrivial spacelike copier would let one distinguish these by tomography on the two ``copies'', enabling superluminal signalling. Either way, nontrivial spacelike copying is incompatible with relativistic causality unless $\mathsf{C}_O$ is central.
+(2) Assume $\tilde O$ is spacelike to $O$ and \eqref{eq:copy-pointer} holds nontrivially for a non-central $\mathsf{C}_O\subset\mathcal{A}(O)$. Under standard AQFT hypotheses (Haag duality, spectrum condition, nuclearity)~\cite{BuchholzWichmann1986,DoplicherLongo1984}, the \emph{split property} yields a type~I factor $N$ with $\mathcal{A}(O)\subset N \subset \mathcal{A}(\tilde O')'$ whenever $O\Subset\tilde O$; this gives an approximate tensor factorization $\mathcal{A}(O)\,\bar\otimes\,\mathcal{A}(\tilde O')'\hookrightarrow\mathcal{B}(\mathcal{H})$. Any spacelike copying map as in \eqref{eq:copy-pointer} would then extend (by normality) to a vacuum-preserving normal $*$-homomorphism $\pi:\mathcal{A}(O)\to\mathcal{A}(\tilde O)$ intertwining the respective local modular structures. By microcausality and Reeh--Schlieder~\cite{ReehSchlieder1961} (vacuum cyclic and separating for local algebras), such a nonlocal intertwiner must act trivially on non-central elements; with type~III local algebras having trivial center, $\pi$ (hence the copy) is trivial. Operationally: choices of incompatible instruments at $O$ prepare distinct pointer decompositions with the same average channel; a nontrivial spacelike copier would let one distinguish these by tomography on the two ``copies'', enabling superluminal signalling. Either way, nontrivial spacelike copying is incompatible with relativistic causality unless $\mathsf{C}_O$ is central.
 \end{proof}
 
 \begin{remark}[Split property, Reeh--Schlieder, and nonlocal intertwiners]
@@ -574,7 +575,7 @@ exhibiting $\delta_{\mathcal{B}}$ as a ``local diagonal'' \emph{stable} under de
 In logic, diagonalization exposes limits of axiomatic completeness: some truths are unprovable without inconsistency. In quantum theory, the absence of a global diagonal yields \emph{complementarity}: not all properties admit simultaneous sharp values, and measurement back-action forbids a single, uniform self-description that preserves all coherences. The structural role is parallel: both regimes impose a boundary on global self-application to preserve consistency---in logic, the boundary appears as incompleteness; in quantum physics, as indeterminacy and contextuality. In both cases, \emph{self-consistency} (fixed points, context-relative classicality) replaces \emph{self-description by duplication}.
 
 \begin{remark}[Recoverability and approximate locality]
-In composite regions $A\!-\!B\!-\!C$, small conditional mutual information $I(A\!:\!C|B)$ implies approximate recoverability (Petz/Fawzi--Renner), i.e.\ a near-fixed-point property of the dynamics restricted to $B$. This aligns with the comonadic picture: where states are approximately Markovian, local classicality is robust and copying behaves cartesianly \emph{in context}, yet remains obstructed globally.
+In composite regions $A\!-\!B\!-\!C$, small conditional mutual information $I(A\!:\!C|B)$ implies approximate recoverability (Petz/Fawzi--Renner)~\cite{Petz1986,FawziRenner2015}, i.e.\ a near-fixed-point property of the dynamics restricted to $B$. This aligns with the comonadic picture: where states are approximately Markovian, local classicality is robust and copying behaves cartesianly \emph{in context}, yet remains obstructed globally.
 \end{remark}
 
 \subsection{No-Coaction Principle and a Kinematic Filter for UV Completions}
@@ -760,11 +761,6 @@ Sole author: conceptualization, methodology, formal analysis, and writing.
 \medskip
 \noindent\textbf{Acknowledgments.}
 The author used large language models for drafting, proofing, and \LaTeX{} formatting assistance, and for critical review suggestions: ChatGPT (GPT-5). The author is responsible for the content and any errors.
-
-\medskip
-\noindent\textbf{Provenance and versioning.}
-Repository:\\ \commiturl. 
-Compiled with pdf\TeX{} 1.40.27 (TeX Live 2025). 
 
 \medskip
 \noindent\textbf{License.}
