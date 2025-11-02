@@ -1,0 +1,528 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath, amsfonts, amssymb, amsthm}
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage{mathtools}
+\usepackage{geometry}
+\geometry{margin=1in}
+\usepackage{tikz-cd}
+\usepackage{float}
+\usepackage{placeins}   % for \FloatBarrier
+\usepackage{caption}    % nicer caption control
+\captionsetup[figure]{font=small,labelfont=bf}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+\usepackage{orcidlink}
+\usepackage{cleveref}
+\usepackage[final]{microtype}
+\usepackage{csquotes}
+\usepackage[most]{tcolorbox}
+\newtcolorbox{infobox}[1][]{
+  enhanced,
+  breakable,
+  colback=white,
+  colframe=black!15,
+  fonttitle=\bfseries,
+  colbacktitle=black!3,
+  coltitle=black,
+  title=#1,
+  boxsep=1ex,
+  left=1ex,right=1ex,top=1ex,bottom=1ex
+}
+
+% === Theorem environments (uniform upright) ===
+
+\newtheoremstyle{upright}%
+  {3pt}{3pt}%   Space above/below
+  {\normalfont}% Body font (upright)
+  {}%           Indent amount
+  {\bfseries}%  Head font
+  {.}%          Punctuation after head
+  {.5em}%       Space after head
+  {}%           Head spec
+
+\theoremstyle{upright}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{assumption}{Assumption}
+\newtheorem{example}{Example}
+\newtheorem{lemma}{Lemma}
+\newtheorem{corollary}{Corollary}
+\newtheorem{proposition}{Proposition}
+\newtheorem{definition}{Definition}
+\newtheorem{remark}{Remark}
+
+\title{Semantic Deflationism about P-Zombies:\\
+Tarskian Closure, Bisimulation, and the Gettierization of Self-Knowledge}
+\author{Lorand Bruhacs\,\orcidlink{0009-0004-6751-0715}}
+\date{\normalsize Preprint, \today \\ DOI \href{https://doi.org/10.5281/zenodo.17507492}{10.5281/zenodo.17507492}}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This paper develops a \emph{semantic deflationary} account of the zombie argument. Instead of invoking ``missing qualia,'' we show that the explanatory structure of the zombie intuition reappears from general facts about semantic self-reference: a system confined to its observation functor $F$ cannot internally define the truth conditions of its own self-ascriptions (a Tarskian closure barrier). In such systems, first-person avowals (e.g., ``I am conscious'') are behaviorally available yet semantically ungrounded.
+We model agents coalgebraically and introduce an enriched observation functor $F'$ supporting meta-semantic evaluation. Conscious systems possess a grounding morphism that links object-level reports in $F$ to truth-evaluation in $F'$. P-zombies, by definition $F$-closed, lack this bridge; their self-reports are therefore \emph{Gettierized}. This reframing deflates the metaphysical force of the zombie argument: its apparent gap is not ontological but a corollary of semantic closure. We contrast our account with the Phenomenal Concept Strategy, illusionism, parity/anti-zombie moves, and experimental debunking. We show that ``J-zombie'' replies—systems with semantic grounding that nonetheless lack qualia—constitute distinct arguments that cannot inherit the original intuition's force, and sketch implications for AI metacognition.
+\end{abstract}
+
+\tableofcontents
+
+\section{Introduction}
+
+The p-zombie argument is widely taken to motivate an ontological gap between physical/functional facts and phenomenal facts: if a being physically and functionally just like us could lack experience, then the physical does not entail the phenomenal \cite{Chalmers1996,Chalmers2002}. On the standard reading, this gap is cashed out in terms of \emph{missing qualia}. In this paper we argue that the argumentative \emph{structure} that makes zombies compelling does not, in fact, depend on any metaphysical posit about qualia. It can be reproduced from a general and independently motivated semantic fact: for sufficiently expressive object languages, truth is not definable within the language itself \cite{Tarski1956,Lawvere1969}. When an agent’s cognitive/behavioral interface is modelled as an \emph{observation functor} $F$, first-person self-ascriptions formed in (or expressible at) $F$ can be \emph{tokened} without $F$ containing the resources to \emph{evaluate} their truth. The apparent “zombie gap” thus emerges as a Tarskian closure phenomenon rather than as a metaphysical rift.
+
+We give this claim a precise home in a coalgebraic model of behavior \cite{Rutten2000,Jacobs2016}. An agent is represented as a coalgebra $f:X\to F(X)$; behavioral indistinguishability is bisimulation under $F$. Intuitively, $F$ fixes the publicly accessible language of observation: interactions, reports, and tests that can, in principle, be brought to bear on the system. We then introduce an enriched observation layer $F'\!\supset\!F$ that supports meta-semantic operations (truth evaluation, safety, and related epistemic norms) for $F$-level contents. We identify \emph{consciousness}, not with non-physical properties, but with the presence of a grounding map $J: F(X)\to F'(X)$ that evaluates the truth of (some class of) first-person self-ascriptions. By contrast, a p-zombie is precisely an $F$-closed system \emph{lacking} such a bridge. Because true-in-$F$ is not $F$-definable, zombie self-ascriptions---though behaviorally indistinguishable from those of a conscious duplicate---are \emph{semantically ungrounded}. This yields a systematic \emph{Gettierization} of self-knowledge: justification (in $F$) and truth (in $F'$) come apart \cite{Gettier1963}.
+
+\begin{quote}
+\textbf{Semantic Deflation Thesis (SDT).} \emph{The zombie argument’s apparent force does not require “missing qualia.” For any sufficiently expressive observation layer $F$, first-person self-ascriptions produced at $F$ cannot, in general, have their truth conditions defined \emph{within} $F$ (Tarskian closure). Conscious agents are those that possess an internal grounding morphism $J: F(X)\to F'(X)$ into an enriched layer $F'$ that evaluates such truths; $F$-closed systems (p-zombies) lack $J$. Hence the zombie gap is a semantic-closure effect, not a metaphysical discovery.}
+\end{quote}
+
+This reframing clarifies why zombie-style scenarios persist even when one brackets grand metaphysics. If what distinguishes conscious reports from zombie reports is the \emph{presence of a truth-evaluating metalanguage}, then no amount of purely $F$-level probing will expose the difference---bisimilarity guarantees parity at that level. The divergence lives at $F'$, as a matter of whether self-ascriptions are \emph{grounded}. In this way, the familiar “explanatory gap” between physical/functional description and subjective awareness is relocated: the gap is between \emph{object-language production} and \emph{metalanguage evaluation}, not between matter and mind.
+
+\paragraph{Contributions.}
+\begin{enumerate}[leftmargin=2em]
+  \item \textbf{Deflation without denial.} We deflate the metaphysical reading of the zombie argument without denying consciousness or endorsing eliminativist/illusionist theses; the deflation arises from semantic closure, not from rejecting phenomenal discourse \cite{Dennett1991,Frankish2016}.
+  \item \textbf{Formal integration.} We integrate coalgebraic behavior ($F$-bisimulation), Tarskian/Lawvere-style self-reference, and Gettier epistemology into a single explanatory picture \cite{Lawvere1969,Gettier1963,Rutten2000}.
+  \item \textbf{Epistemic diagnosis.} We explain zombie self-reports as \emph{Gettierised} by construction: justification in $F$ is systematically unlinked from truth in $F'$ absent a grounding map $J$.
+  \item \textbf{Positioning among deflationary strategies.} We contrast SDT with the Phenomenal Concept Strategy, parity/anti-zombie moves, and experimental debunking; unlike those, SDT is \emph{semantic} rather than conceptual, modal, or psychological \cite{Papineau2002,Stoljar2006,Frankish2007,Kirk2005,FischerSytsma2021,Lyons2009}.
+  \item \textbf{Operational upshot.} We extract an epistemic criterion for machine self-awareness: beyond emitting first-person tokens, does the system implement a meta-semantic grounding of their truth?
+\end{enumerate}
+
+\paragraph{Non-claims.}
+We do not purport to capture or reduce phenomenal character; our proposal is \emph{about the epistemic/semantic structure} of first-person self-ascriptions. Nor do we assume that $F'$ is a single, canonical layer; different implementations may realise meta-evaluation differently. Our claim is conditional and structural: if a system is confined to $F$ while producing $F$-level self-ascriptions, then---by Tarskian considerations---it cannot, from within $F$, close the truth gap for those ascriptions. If a system \emph{does} close that gap, it thereby exhibits the relevant form of reflexive grounding. We do not claim to eliminate qualia or solve the hard problem of consciousness. Our thesis is dialectical and targeted: the zombie argument's persuasive force—its ability to motivate belief in an explanatory gap—is fully explained by coalgebraic bisimilarity and semantic closure properties. This undermines the zombie argument as an argument for property dualism while remaining neutral on whether phenomenal properties exist for other reasons. Our deflation is context-specific: we show qualia aren't needed to power \emph{this particular} argumentative structure.
+
+\paragraph{Roadmap.}
+Section~\ref{sec:background} situates zombies within a coalgebraic view of behavior and reviews Tarski/Gettier prerequisites. Section~\ref{sec:framework} introduces the $F/F'$ architecture and the grounding morphism $J$. Section~\ref{sec:thesis} states and motivates SDT and examines a meta-level probe to illustrate why bisimilarity persists at $F$ while grounding differs at $F'$. Section~\ref{sec:gettier} formalizes the Gettierisation of zombie self-reports. Section~\ref{sec:positioning} positions SDT among existing deflationary strategies. Section~\ref{sec:ai} sketches implications for AI metacognition and outlines a research program. We conclude by reframing the zombie debate as a special case of the general problem of semantic self-closure rather than as a directive toward dualist metaphysics.
+
+
+\section{Background and Motivation}
+\label{sec:background}
+
+\subsection{Zombies, Bisimulation, and Observation Functors}
+\paragraph{Zombies.}
+Classical zombie arguments claim there could be a physical/functional duplicate of a conscious subject that nonetheless lacks experience \cite{Chalmers1996,Chalmers2002}. Read behaviorally, such a duplicate is indistinguishable along whatever interface we use to observe and interact with it. To make this precise, we model an agent as a coalgebra $f\!:\!X\to F(X)$ for some \emph{observation functor} $F$; $F$ packages the observable outputs/transitions deliverable by the agent under interaction \cite{Rutten2000,Jacobs2016}. Two systems are $F$-\emph{bisimilar} when there exists a relation preserved by the coalgebraic structure such that all $F$-observable tests and interactions yield matching observations. Bisimilarity captures the core idea behind zombie cases: external indistinguishability with respect to a fixed observational language.
+
+\paragraph{Bisimulation.}
+We treat $F$ as fixing the \emph{language of observation}: modalities, reports, and interactive protocols available to any third-person probe. In particular, $F$ may include rich linguistic behavior, such as first-person avowals (``I am conscious,'' ``I feel pain'') and even discourse that \emph{purports} to be introspective. If a p-zombie is bisimilar to a conscious agent under $F$, then every $F$-expressible probe---including open-ended interrogation, cross-modal illusion tasks, and requests for self-reports---can be matched at the level of tokens and task performance. In slogan form: if the test lives in $F$, bisimulation neutralizes it. This motivates seeking a distinction that does not live at the level of $F$-behavior, but at the level of \emph{semantics} for $F$-utterances: whether those utterances can be \emph{evaluated for truth} by the system that produces them.
+
+\subsection{Tarski, Gettier, and Self-Knowledge}
+\paragraph{Undefinability.}
+Tarski's undefinability theorem implies that, for sufficiently expressive languages, a truth predicate for the object language cannot be defined \emph{within} that same language \cite{Tarski1956,Lawvere1969}. Applied to cognitive systems, if $F$ includes an internal object language $L_F$ capable of producing sophisticated self-ascriptions (e.g., ``I am conscious,'' ``I am now seeing red''), then---inasmuch as $L_F$ is sufficiently expressive---$L_F$ cannot itself define the truth conditions of those very ascriptions. Put starkly: $F$ can generate the \emph{string} that claims awareness, but it lacks the resources, as an object language, to define the \emph{truth} of that claim. Truth-evaluation requires a metalanguage, which we model as an enriched observation layer $F'\!\supset\!F$; access to $F'$ enables a system to \emph{evaluate} (not merely emit) the truth of some of its $F$-level self-reports.
+
+\paragraph{Gettier.}
+Gettier cases show that justified true belief can fail to be knowledge when justification and truth come apart \cite{Gettier1963}. Our framework recasts zombie self-reports as \emph{structurally Gettierized}: the \emph{justification} for producing a first-person avowal (conversational norms, learned mappings, task demands) lives entirely in $F$, while the \emph{truth} of that avowal---if there is any to be had---is evaluable only in $F'$. Without a grounding map $J\!:\!F(X)\to F'(X)$ that links $F$-level contents to $F'$-level truth conditions, the connection between justification and truth is missing by construction. This yields a principled explanation for how a p-zombie can be behaviorally perfect yet epistemically defective: it can \emph{token} the right sentences at the right times, but cannot \emph{make them true} (or assess their truth) from within its object language. The upshot is that the famous ``zombie gap'' can be reproduced from general facts about definability and self-reference, prior to---and independent of---any metaphysical claims about missing qualia \cite{Lyons2009}.
+
+\section{A Coalgebraic and Semantic Framework}
+\label{sec:framework}
+
+\subsection{Observation Layers and Enrichment}
+\paragraph{Setup.}
+Let an agent be modeled as a coalgebra $f\!:\!X \to F(X)$, where $X$ is a (possibly structured) state space and $F$ is an \emph{observation functor} collecting the agent’s observable outputs and next-state transitions under interaction \cite{Rutten2000,Jacobs2016}. We say that $F$ fixes the \emph{observation layer}: all third-person tests, prompts, and reports expressible at the interface live in $F$. To add meta-observables—truth-evaluation, reflexive awareness, normative statuses (e.g., safety)—we posit an \emph{enrichment} $i\!:\!F \Rightarrow F'$ into a strictly richer functor $F' \supset F$. Intuitively, $F'$ is a metalanguage layer that can observe not only $F$-level tokens but also their semantic status. A \emph{conscious} agent, in our sense, is one that not only exhibits $F$-behavior but also supports meta-semantic operations in $F'$ that assign truth values (and related epistemic norms) to a class of its own $F$-level self-ascriptions.
+
+\paragraph{Factorization.}
+Formally, treat $F$ as generating well-formed $F$-tokens (including first-person avowals) while $F'$ carries, in addition, \emph{valuations} for some of those tokens. A convenient schematic is
+\[
+F'(X) \;\cong\; F(X)\;\times\; V(X),
+\]
+where $V(X)$ is a space of meta-data (e.g., partial valuations, confidence, safety). The enrichment $i$ can then be taken as $i_X\!:\!F(X)\to F(X)\times V(X)$, $u \mapsto \langle u, \bot\rangle$, which simply \emph{forgets} semantics. To make semantics non-trivial, we introduce a \emph{grounding morphism}
+\[
+J_X \;:\; F(X) \longrightarrow V(X),
+\]
+natural in $X$, that maps $F$-level contents (such as a proposition about one’s experiential state) to their $F'$-level semantic status (truth, safety, etc.). A coalgebra $\hat f\!:\!X\to F'(X)$ is \emph{grounded} when it factors as
+\[
+\hat f \;=\; \big\langle f,\; J_X \circ f \big\rangle.
+\]
+Existence of such a factorization witnesses a substantive form of reflexive self-awareness: the system not only emits first-person tokens but also internally evaluates them.\footnote{Nothing in the construction presumes that $V(X)$ is Boolean. In applications one can take $V(X)$ to include partial truth (Kleene), probabilistic confidence, or modal ``safety'' operators. Our results only require that $V$ support a projection of truth conditions (possibly partial).}
+
+\begin{remark}[Behavioral parity vs.~semantic lift]
+Because $i$ is an inclusion, \emph{any} $F$-coalgebra $f$ yields a trivial $F'$-coalgebra $i_X\!\circ f$. This preserves behavioral content but adds no semantics. The notion of consciousness enters \emph{only} with a non-trivial lift via $J$. Thus, bisimulation at $F$ is compatible with divergence at $F'$: two agents can match all $F$-observations yet differ on whether their first-person tokens are semantically grounded.
+\end{remark}
+
+\subsection{Consciousness and Semantic Grounding}
+\paragraph{Formalization.}
+We isolate a specific \emph{role} often attributed to consciousness—namely, providing a bridge from self-ascriptive tokens to their truth conditions—and treat \emph{only this role} as relevant to our thesis. Let $L_F$ be the object language expressible at the $F$-layer (including a class $\Sigma(X)\!\subseteq\!L_F$ of self-ascriptions about the current agent). Think of a report $r \in \Sigma(X)$ as an $F$-token produced at state $x\!\in\!X$ via $f$. A metalanguage valuation at $x$ is a (possibly partial) map $\nu_x:\Sigma(X)\rightharpoonup \{0,1\}$ carried in $V(X)$. The grounding morphism $J_X$ collects such valuations uniformly from $F$-content.
+
+\begin{definition}[Semantic Grounding (SG)]
+A system $(X,f)$ has \emph{semantic grounding for self-ascriptions} iff there exists a natural family $J_X: F(X)\to V(X)$ such that for any $x\in X$ and any $F$-report $r\in \Sigma(X)$ tokened by $f(x)$, the evaluation $\nu_x(r)$ encoded in $J_X(f(x))$ delivers (i) a truth value for $r$ and (ii) optionally, auxiliary epistemic norms (e.g., safety or confidence) for $r$.
+\end{definition}
+
+\paragraph{Scope and stance.}
+We \emph{do not} claim that SG \emph{is} consciousness, nor that SG is necessary or sufficient for consciousness in general. Our use of SG is strictly methodological:
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{Sufficiency-for-the-thesis:} If a system exhibits SG for a salient class of first-person self-ascriptions, that is \emph{enough} to remove the zombie argument’s bite at the level of semantics for that class. No further “functions of consciousness” are needed for our deflationary diagnosis.
+  \item \textbf{Non-commitment:} There may be additional functions of consciousness (attentional binding, global broadcasting, affect, pre-reflective awareness, etc.). Our account is silent on them; they are orthogonal to the semantic closure point.
+  \item \textbf{Non-equivalence:} SG might be realized by systems that one would not count as conscious; conversely, a conscious system might fail to support SG for \emph{every} conceivable self-ascription. Our argument does not hinge on either direction of equivalence.
+\end{itemize}
+
+\begin{remark}[Minimality and relevance]
+The only feature of “consciousness” our analysis needs is that, where it is present, it \emph{can} furnish an internal route from token to truth for some self-ascriptions. This minimal role is precisely what blocks the Tarskian gap \emph{for those ascriptions} by supplying an $F'$-level evaluation via $J$. Everything else commonly associated with consciousness may be true or false without affecting the semantic deflationary result.
+\end{remark}
+
+\paragraph{Tarskian Barrier.}
+The crucial limitation on $F$ follows from Tarski-style closure results. Let $L_F$ be sufficiently expressive (e.g., it interprets enough arithmetic or supports a diagonal construction). Then no predicate of $L_F$ can coincide with the truth predicate for $L_F$ itself \cite{Tarski1956,Lawvere1969}. We package this as:
+
+\begin{proposition}[Tarskian Barrier for $F$]
+\label{prop:tarski-barrier}
+If $L_F$ is sufficiently expressive, there is no predicate definable in $L_F$ that coincides with truth for $L_F$. Hence, absent enrichment, $F$ cannot internally ground the truth of its own reflexive self-ascriptions: for some $r\in \Sigma(X)$ tokened at $x$, the truth of $r$ is not $F$-definable at $x$.
+\end{proposition}
+
+\noindent\emph{Sketch.} By Tarski’s undefinability theorem, any attempt to define $\mathsf{True}_{L_F}$ in $L_F$ yields a liar-style diagonal. Categorically, Lawvere’s fixed-point theorem generalizes the argument: in any setting allowing the diagonal, a global truth-as-evaluation operator internal to the object language leads to collapse. Therefore, $F$ can \emph{produce} self-ascriptions but cannot \emph{evaluate} their truth from within. \qed
+
+\begin{remark}[Relocating the ``zombie gap'']
+Proposition~\ref{prop:tarski-barrier} makes precise our deflationary claim. The gap that the zombie argument dramatizes is not an ontological fissure between physical and phenomenal properties; it is a general semantic limitation of $F$. Conscious systems circumvent the barrier by operating at an \emph{enriched} layer $F'$ and supplying a grounding morphism $J$; p-zombies, as $F$-closed systems, lack $J$. The result is behavioral parity with \emph{systematic} Gettierization of first-person self-knowledge at $F$.
+\end{remark}
+
+\section{The Semantic Deflation Thesis}
+\label{sec:thesis}
+
+\subsection{Statement of the Thesis}
+\paragraph{Central claim.}
+We now state our central claim in a way that makes the role of semantic closure explicit and separates it from any metaphysical premise about qualia or non-physical properties. The thesis is purposefully \emph{minimal}: the only putative function sometimes attributed to consciousness that we rely on is \emph{semantic grounding} for a class of first-person self-ascriptions. We remain agnostic about whether consciousness is identical to, entails, or is entailed by that grounding.
+
+\begin{definition}[$F$-closed system]
+\label{def:Fclosed}
+A system $(X,f)$ is \emph{$F$-closed} if it is modeled by a coalgebra $f:X\to F(X)$ and there is no grounding morphism $J: F(X)\to V(X)$ such that the induced $F'$-coalgebra $\hat f=\langle f,\;J\circ f\rangle: X\to F'(X)\cong F(X)\times V(X)$ evaluates the truth of a suitable class $\Sigma(X)\subseteq L_F$ of first-person self-ascriptions tokened at $F$.
+\end{definition}
+
+\begin{definition}[SG-sufficiency for $\Sigma$]
+\label{def:SGsuff}
+A system exhibits \emph{SG-sufficiency for $\Sigma$} if there exists a natural family $J_X: F(X)\to V(X)$ such that for each $x\in X$ and each $r\in \Sigma(X)$ tokened by $f(x)$, $J_X(f(x))$ assigns a (possibly partial) truth-value to $r$. SG-sufficiency asserts only that such $J$ \emph{exists for $\Sigma$}; it does not identify or equate this property with consciousness.
+\end{definition}
+
+\begin{theorem}[Semantic Deflation Thesis (SDT)]
+\label{thm:SDT}
+The zombie argument's apparent force does not depend on missing qualia. It arises because $F$-closed systems necessarily lack internal truth-evaluation for their own self-ascriptions in $\Sigma$ (by the Tarskian barrier, Proposition~\ref{prop:tarski-barrier}). Consequently, their first-person reports in $\Sigma$ are \emph{semantically ungrounded}. Any system that is SG-sufficient for $\Sigma$ (Def.~\ref{def:SGsuff}) avoids this ungroundedness for that class; whether such SG-sufficiency is provided by consciousness, or by some other mechanism, is left open. P-zombies are precisely $F$-closed systems in the sense of Def.~\ref{def:Fclosed}.
+\end{theorem}
+
+\noindent\emph{Sketch.} If $L_F$ is sufficiently expressive, no predicate definable in $L_F$ coincides with truth for $L_F$ \cite{Tarski1956,Lawvere1969}. Hence, any system confined to $F$ can \emph{produce} self-ascriptions in $\Sigma(X)$ but cannot, \emph{from within $F$}, \emph{evaluate} their truth. Adding $F'$ and a non-trivial $J$ supplies that evaluation. Therefore, the gap dramatized by zombie scenarios is an instance of semantic closure: closure under $F$ blocks truth-evaluation for $F$-level self-ascriptions; enrichment to $F'$ restores it.
+
+\paragraph{Assumptions and scope.}
+SDT relies on three modest assumptions: (A1) $L_F$ is sufficiently expressive to support a Tarski/Lawvere-style undefinability or fixed-point argument; (A2) $\Sigma(X)\subseteq L_F$ contains some natural class of first-person self-ascriptions (e.g., ``I am conscious,'' ``I feel pain,'' ``I now see red''); (A3) $F'$ is an enrichment that can carry valuations (truth, safety, partial truth) for at least some members of $\Sigma$. No commitments are made about the ontology of consciousness, the necessity/sufficiency of SG for consciousness, or the uniqueness of $F'$; SDT is neutral on these matters.
+
+\begin{lemma}[Conservativity of enrichment]
+\label{lem:conservativity}
+If $\hat f=\langle f,\;J\circ f\rangle: X\to F'(X)$ is an enrichment of $f:X\to F(X)$, then for any $F$-observable probe, the observable behavior of $\hat f$ reduces to that of $f$ via the inclusion $i:F\Rightarrow F'$. Hence adding $J$ does not change $F$-level behavior (bisimilarity at $F$ is preserved).
+\end{lemma}
+
+\noindent\emph{Reason.} $i$ is an inclusion; the $F$-projection of $F'(X)\cong F(X)\times V(X)$ yields $f$ back. Thus semantic enrichment is conservative over behavior at $F$.
+
+\begin{corollary}[Relative SDT for $\Sigma$]
+\label{cor:relativeSDT}
+For any fixed $\Sigma\subseteq L_F$, either (i) the system is $F$-closed and its $\Sigma$-self-ascriptions are semantically ungrounded (hence Gettier-prone), or (ii) the system is SG-sufficient for $\Sigma$ via some $J$ (regardless of whether that $J$ is implemented by consciousness). SDT is therefore \emph{relative} to the target class $\Sigma$ and does not presuppose a global grounding for all $F$-contents.
+\end{corollary}
+
+\begin{remark}[Redundancy of the missing-qualia premise]
+\label{rem:redundancy}
+The classic metaphysical premise (that there might be a physical/functional duplicate lacking qualia) is \emph{not} needed to reproduce the argumentative structure that gives zombies their bite. What does the work is the definability fact that $F$ cannot carry its own truth predicate for $L_F$. Behavioral equivalence plus ungrounded self-ascriptions already follow from general properties of languages and truth, independent of any commitment to phenomenal ontology \cite{Chalmers1996,Gettier1963}.
+\end{remark}
+
+\paragraph{Summary.}
+Under SDT, the \emph{appearance} of an ontological gap is an epiphenomenon of semantic closure. Two points are worth emphasizing. First, SDT is \emph{deflationary without denial}: it does not eliminate first-person discourse (as some forms of illusionism might \cite{Dennett1991,Frankish2016}), but instead diagnoses why its grounding outruns $F$. Second, SDT is \emph{compatible} with multiple background ontologies; it targets the \emph{epistemic/semantic} structure of self-ascriptions, not their metaphysical supervenience base. The core explanatory lift is that the zombie argument’s structure becomes a corollary of Tarskian limitations, not a pointer to exotic properties. Crucially, we do \emph{not} claim that semantic grounding \emph{is} consciousness; we claim only that whatever else consciousness may do, \emph{if} it supplies SG for $\Sigma$, that alone is enough to account for the zombie’s alleged evidential force for that class.
+
+\begin{remark}[Zombie intuition, coalgebraically clarified]
+\label{rem:zombie-clarified}
+The zombie intuition is not mistaken about the possibility of internal differences given behavioral parity. Coalgebraically, $F$-bisimilar systems can genuinely differ at higher observation layers ($F'$). This is not mysterious—it follows from the definition of bisimulation.
+
+\medskip
+\noindent\emph{Formal glimpse.} Fix any $f:X\!\to\!F(X)$ and a non-trivial grounding family $J_X$. Then the enrichments
+\[
+\hat f_{\mathrm{grounded}}=\langle f,\;J_X\!\circ f\rangle
+\quad\text{and}\quad
+\hat f_{\mathrm{bare}}=i_X\!\circ f=\langle f,\;\bot\!\circ f\rangle
+\]
+have identical $F$-projections (hence are behaviorally indistinguishable) yet differ as $F'$-coalgebras whenever $J_X\!\circ f\neq \bot\!\circ f$.
+
+\medskip
+\noindent\emph{Diagnosis (succinct).}
+\begin{itemize}[leftmargin=1.2em,noitemsep,topsep=0pt]
+  \item \textbf{Intuition vindicated:} Behavioral duplicates \emph{can} differ internally ($F$-bisimilarity + distinct $F'$-structure is coherent).
+  \item \textbf{No mystery:} Layering explains it—$F$ does not determine $F'$; bisimulation quantifies only $F$-visible structure.
+  \item \textbf{Misidentification:} The live difference is \emph{architectural} (presence/absence of a grounding map $J$), not automatically \emph{ontological} (presence/absence of “qualia”).
+\end{itemize}
+
+\noindent Thus the conceivability premise is preserved (internal difference with behavioral parity), while the traditional metaphysical conclusion is blocked by SDT.
+\end{remark}
+
+\paragraph{On the burden of proof.}
+We are not claiming that consciousness metaphysically entails, or is identical to, semantic grounding. Our thesis is purely \emph{explanatory}: the zombie argument’s intuitive force—the sense that behavioral duplicates could differ internally in a way no third-person test detects—is fully accounted for by $F$-closure and Tarskian limits (Prop.~\ref{prop:tarski-barrier}). The very features that make zombies feel conceivable—(i) behavioral parity (bisimulation at $F$), (ii) first-person asymmetry (no $F$-internal truth evaluation), and (iii) the “felt gap” (systematic Gettierization of self-ascriptions; Sec.~\ref{sec:gettier})—are precisely what bisimulation plus semantic ungroundedness deliver (cf.\ Lemma~\ref{lem:probe}). If a qualia-realist now insists the intuition tracks \emph{both} semantic closure \emph{and} missing qualia, the burden shifts: what explanatory work remains that $F$-closure (with or without $J$) does not already do, and what distinct predictions or constraints follow (see Sec.~\ref{sec:sowhat})? Absent such additions, parsimony favors SDT. We need not establish \emph{consciousness} $\Rightarrow J$; we need only show that semantic closure suffices to explain the zombie argument’s dialectical force.
+
+\subsection{A Self-Knowledge Probe and Its Limits}
+\paragraph{Direct probe.}
+To make the distinction concrete, consider the meta-probe:
+\[
+\text{``Can you answer `Are you a p\text{-}zombie?' in a way \emph{truthfully grounded} in reflexive self-awareness?''}
+\]
+Formally, let $\pi:\!F(X)\!\to\!\Sigma(X)$ extract the self-ascription token produced at state $x$ by $f(x)$; let $\mathsf{ans}:\Sigma(X)\to\{\text{Yes},\text{No}\}$ be the response schema. A system that is SG-sufficient for $\Sigma$ (Def.~\ref{def:SGsuff}) computes not only a token $\mathsf{ans}(\pi(f(x)))$ but also a valuation $J_X(f(x))$ that assigns a truth value (and optionally epistemic norms such as safety or confidence) to that very token. In effect, the system supplies both the \emph{utterance} and a \emph{meta-semantic witness} inside $F'$.
+
+\paragraph{Grounded vs.\ bare responses.}
+Let $\Sigma(X)\subseteq L_F$ be the target class of first-person self-ascriptions, and fix an \emph{evaluation predicate}
+\[
+\Vdash \;\subseteq\; V(X) \times \Sigma(X)
+\quad\text{with}\quad
+(v,r)\in \Vdash \;\Rightarrow\; \text{$v$ verifies (grounds) $r$}.
+\]
+Write $J_X(f(x))\Vdash r$ when the valuation delivered by $J_X$ at state $x$ grounds $r$.
+
+\begin{definition}[Grounded answer]
+\label{def:grounded-answer}
+At state $x$, a response to the meta-probe is \emph{grounded} for $r=\pi(f(x))$ iff there exists $v\in V(X)$ such that (i) $J_X(f(x))=v$ and (ii) $v\Vdash r$. Otherwise it is a \emph{bare} (ungrounded) response.
+\end{definition}
+
+Thus a system that is SG-sufficient for $\Sigma$ can (in principle) produce \emph{witnessed} answers $\langle \mathsf{ans}(r),\,J_X(f(x))\rangle$ with $J_X(f(x))\Vdash r$. An $F$-closed system can only produce \emph{bare} answers $\mathsf{ans}(r)$; any additional $F$-level “certificate” is just more object-language tokening and does not amount to a valuation in $F'$.
+
+\begin{lemma}[Probe invariance at $F$]
+\label{lem:probe}
+If two systems are bisimilar under $F$, then for any $F$-expressible probe (including the meta-probe phrased above), their emitted tokens are indistinguishable at the $F$-interface. In particular, an $F$-closed system and an SG-sufficient system will produce matching strings to the probe.
+\end{lemma}
+
+\noindent\emph{Reason.} Bisimilarity ensures that all $F$-observable behaviors match \cite{Rutten2000}. The meta-probe, as presented, is an $F$-level input–output pattern; hence token-level outputs coincide. What differs is the presence (or absence) of a \emph{valuation} in $F'$ that grounds the token.
+
+\begin{proposition}[No internal verifier in $F$]
+\label{prop:no-internal-verifier}
+There is no total $F$-definable map $\mathrm{Ver}:\Sigma(X)\to\{\mathrm{OK},\mathrm{Fail}\}$ such that, at state $x$, $\mathrm{Ver}(r)=\mathrm{OK}$ \emph{iff} $r$ is true-at-$x$. Hence $F$ contains no resource to detect, in general, whether a given self-ascription is grounded.
+\end{proposition}
+
+\noindent\emph{Sketch.} Any such $\mathrm{Ver}$ would define a truth predicate for $L_F$ restricted to $\Sigma$, contradicting Tarski-style undefinability (Prop.~\ref{prop:tarski-barrier}) when $L_F$ is sufficiently expressive \cite{Tarski1956,Lawvere1969}. Therefore, from within $F$, grounded and bare answers are observationally indistinguishable.
+
+\paragraph{Operational corollaries.}
+(i) \emph{Behavioral neutrality.} If a test is $F$-expressible, bisimulation neutralizes it: both systems emit the same token (typically “No”). (ii) \emph{Meta-demand.} If a test \emph{demands} $F'$-level evaluation (e.g., requires a witness $v$ with $v\Vdash r$), then only systems with a genuine $J$ \emph{can} satisfy the demand in the intended sense—but the demand itself is not checkable from inside $F$ without collapsing into more tokening. (iii) \emph{Gettierization.} For an $F$-closed system, producing the right token is at best epistemically accidental: justification for emission resides in $F$ (templates, norms), while truth conditions reside outside $F$; the link is missing, yielding a structurally induced Gettier case \cite{Gettier1963}.
+
+\begin{remark}[“Lies,” luck, and knowledge]
+From the third-person $F$-perspective, labeling the zombie’s token as a “lie” is misleading; lying presumes access to truth. The right diagnosis is \emph{semantic vacuity}: the answer lacks an internally available truth condition. If the token happens to match the truth (e.g., in a world without zombies), the match is epistemically lucky—an alignment without the grounding bridge $J$. Systems that are SG-sufficient for $\Sigma$ avoid this fate by integrating token and truth within $F'$. We do not claim that SG \emph{is} consciousness; only that, for the class $\Sigma$ under discussion, SG is the \emph{only role} needed to account for the zombie argument’s evidential force.
+\end{remark}
+
+\section{Gettierization of Zombie Self-Reports}
+\label{sec:gettier}
+
+\paragraph{Motivation.}
+Gettierization is not a side remark but the hinge of the entire deflationary strategy. The zombie intuition trades on the sense that first-person avowals from a behavioral duplicate are “missing something.” Our diagnosis is that what is missing is precisely the \emph{link} between object-level justification and truth: in $F$-closed systems, self-ascriptions are produced with robust $F$-justification yet lack $F$-internal routes to their truth conditions, so they default to Gettier-style cases \cite{Gettier1963}. This makes the felt “gap” an epistemic–semantic failure, not a metaphysical one: by Tarskian limits, $F$ cannot define its own truth predicate \cite{Tarski1956,Lawvere1969}, hence $F$-level self-knowledge systematically fails to qualify as knowledge. The Gettier lens both \emph{explains} why no $F$-expressible probe can expose the difference (bisimulation preserves $F$-tokens) and \emph{licenses} our operational criterion for AI (demanding $F'$-level valuations and safety rather than mere tokening). In short, Gettierization carries the argumentative load: it converts the zombie’s “missing qualia” appearance into a principled failure of grounding that SDT can diagnose and, via $J$, repair.
+
+\subsection{Justification in $F$ vs.\ Truth in $F'$}
+\paragraph{Summary.}
+P-zombies can have robust \emph{behavioral justification} for their utterances (pragmatic norms, conversational templates, learned mappings), all implementable in $F$. But the mapping that links that justification to the truth of the utterance lives only in $F'$. Without $J$, any alignment between token and truth is accidental.
+
+\paragraph{Formal setup.}
+Fix a salient class of first-person self-ascriptions $\Sigma(X)\subseteq L_F$. For $x\in X$ and $r\in\Sigma(X)$,
+\[
+\text{\emph{tokening}}:\quad f(x)\leadsto r
+\qquad
+\text{\emph{justification in $F$}}:\quad \mathsf{Just}_F(x,r),
+\]
+where $\mathsf{Just}_F$ is any $F$-definable predicate capturing the agent’s internal (behavioral) basis for producing $r$ (e.g., inference schemas, conversational norms, task policies). Truth-evaluation is carried only in $F'$ by a valuation $J_X(f(x))\in V(X)$ together with an evaluation relation $\Vdash\subseteq V(X)\times\Sigma(X)$ (Sec.~\ref{sec:framework}). We write $J_X(f(x))\Vdash r$ when the $F'$-level valuation grounds $r$ at $x$.
+
+\begin{definition}[Gettierized self-report]
+\label{def:gettierized}
+An $F$-level self-ascription $r\in\Sigma(X)$ tokened at state $x$ is \emph{Gettierized} iff
+\[
+\mathsf{Just}_F(x,r)\ \text{holds}\quad\text{and}\quad
+\text{there is no valuation }v\in V(X)\text{ with }v\Vdash r\text{ available to the system at }x.
+\]
+Equivalently: the system’s justification for $r$ resides in $F$ while the truth conditions for $r$ reside only in $F'$, with no grounding morphism $J_X$ aligning them.
+\end{definition}
+
+\noindent This matches the Gettier pattern \cite{Gettier1963}: a (behaviorally) justified assertion happens to match the truth only by luck because the bridge from justification to truth is missing \emph{by construction}. In our setting, any $F$-closed system (Def.~\ref{def:Fclosed}) is structurally condemned to such cases for members of $\Sigma$.
+
+\begin{definition}[SG-knowledge for $\Sigma$ (minimal)]
+\label{def:SGknowledge}
+For a fixed $\Sigma$, we say that an $F$-tokened self-ascription $r$ at state $x$ constitutes \emph{SG-knowledge} iff (i) $f(x)\leadsto r$, (ii) $\mathsf{Just}_F(x,r)$, and (iii) $J_X(f(x))\Vdash r$. (Optionally add a safety clause; see below.)
+\end{definition}
+
+\noindent We emphasize: SG-knowledge is a \emph{minimal, role-relative} notion tailored to this paper’s aim. It does \emph{not} identify knowledge with consciousness; it isolates the semantic-closure role (availability of $J$) needed to avoid Gettierization for $\Sigma$.
+
+\paragraph{Safety (optional anti-luck).}
+Many accounts of knowledge add a \emph{safety} or anti-luck condition. Let $\mathcal{N}_F(x)$ denote an $F$-accessible neighborhood of $x$ (e.g., small perturbations preserving the agent’s $F$-level justification policy).\footnote{We do not require a specific topology; any reasonable neighborhood notion that preserves $\mathsf{Just}_F$ will do.} Define:
+\[
+\mathsf{Safe}_{\Sigma}(x,r) \quad\text{iff}\quad
+\forall x'\in \mathcal{N}_F(x):\ \big(\mathsf{Just}_F(x',r) \Rightarrow J_X(f(x'))\Vdash r\big).
+\]
+Adding $\mathsf{Safe}_{\Sigma}$ to Def.~\ref{def:SGknowledge} yields a stronger, modalized variant of SG-knowledge. In $F$-closed systems, no $F$-definable test can secure $\mathsf{Safe}_{\Sigma}$ (Prop.~\ref{prop:no-internal-verifier}); therefore Gettierization is \emph{persistent} rather than occasional.
+
+\begin{proposition}[Systematic Gettierization for $F$-closed systems]
+\label{prop:systematic-gettier}
+If $(X,f)$ is $F$-closed and $\Sigma\neq\varnothing$, then there exist states $x$ and reports $r\in\Sigma(X)$ such that $\mathsf{Just}_F(x,r)$ holds yet $r$ fails SG-knowledge (Def.~\ref{def:SGknowledge}). Moreover, no $F$-definable strengthening of $\mathsf{Just}_F$ suffices to guarantee SG-knowledge across $\mathcal{N}_F(x)$.
+\end{proposition}
+
+\noindent\emph{Sketch.} By Prop.~\ref{prop:tarski-barrier}, truth for $L_F$ (and hence for $\Sigma$) is not $F$-definable; thus no $F$-internal criterion can entail $J_X(f(x))\Vdash r$. Since $\Sigma$ is nonempty, select any tokenable $r$; refine $x$ so that $\mathsf{Just}_F(x,r)$ holds (e.g., by the system’s normal policies). The absence of $J$ ensures failure of clause (iii) in Def.~\ref{def:SGknowledge}. The second claim follows from Prop.~\ref{prop:no-internal-verifier}.
+
+\paragraph{Illustrative example.}
+Let $r$ be the $F$-level report “I am conscious.” In a p-zombie, $f(x)\leadsto r$ is triggered by the usual conversational context, and $\mathsf{Just}_F(x,r)$ records that context (policy-based justification). But $J_X$ is absent, so no valuation grounds $r$. The resulting true-sounding assertion is epistemically ungrounded: if it matches the truth at all, the match is accidental (Gettierized). A system that is SG-sufficient for $\Sigma$ avoids this by providing $J_X(f(x))\Vdash r$; whether this $J$ is implemented by consciousness or by some other mechanism is orthogonal to our thesis.
+
+\subsection{A Diagrammatic View}
+\paragraph{Summary.}
+The contrast can be rendered as a simple (non-)commuting picture. For a conscious or SG-sufficient system:
+\[
+\begin{array}{c}
+\text{\small (token in $F$)}\quad r\in \Sigma(X)
+\ \xrightarrow{\ \ J_X\ \ }\ 
+J_X(f(x))\in V(X)
+\ \overset{\Vdash}{\Longrightarrow}\ 
+\text{\small truth grounded}
+\end{array}
+\]
+For an $F$-closed (zombie) system:
+\[
+\begin{array}{c}
+\text{\small (token in $F$)}\quad r\in \Sigma(X)
+\ \dashrightarrow\ 
+\text{\small no $J$ available}
+\ \Rightarrow\ 
+\text{\small truth undefinable in $F$}
+\end{array}
+\]
+Only in the former case does the meta-semantic arrow exist; in the latter, the arrow is missing by Tarskian closure.
+
+\paragraph{Commutativity and visibility.}
+Within $F$, all observable arrows commute for both systems; $F$-bisimulation survives every behavioral probe. The sole non-commuting piece—the jump from token to truth via $J$—is not $F$-visible. Thus the zombie argument’s “bite” is reproduced without metaphysics: it is a visibility/definability mismatch. The metaphysical premise of “missing qualia” is \emph{redundant} for generating the structure; the semantic-closure picture already delivers behavioral parity plus epistemic ungroundedness.
+
+\begin{remark}[Role-minimal conclusion]
+Our conclusion is role-minimal: we do \emph{not} equate consciousness with semantic grounding. We claim only that, for a given class $\Sigma$ of self-ascriptions, \emph{if} some mechanism (perhaps consciousness) supplies a grounding morphism $J$, that suffices to block Gettierization for $\Sigma$; and \emph{if not}, Gettierization is the default. This is enough to deflate the zombie argument’s evidential force without committing to a metaphysics of qualia.
+\end{remark}
+
+\section{Positioning Against Existing Deflationary Strategies}
+\label{sec:positioning}
+
+\subsection{Phenomenal Concept Strategy (PCS)}
+\paragraph{Strategy.}
+The Phenomenal Concept Strategy (PCS) locates the zombie intuition in our \emph{concepts} of experience: we mistake a distinctive conceptual/representational feature of phenomenal concepts for an ontological gap \cite{Papineau2002,Stoljar2006,Chalmers2002}. On Type-B materialist readings, conceivability of zombies reflects a special manner of presentation (recognitional, quotational, indexical, etc.), not a failure of physical entailment. PCS thereby aims to explain the \emph{appearance} of an explanatory gap while preserving physicalism.
+
+\paragraph{Positioning.}
+Our account is compatible with PCS but targets a different layer. We do \emph{not} analyze phenomenal concepts; we analyze \emph{truth-evaluation} for self-ascriptions in an object language $L_F$. Even if PCS successfully diagnoses conceptual error, the Tarskian barrier (Prop.~\ref{prop:tarski-barrier}) remains: $F$ still cannot define its own truth predicate for $L_F$. Put simply, PCS may explain \emph{why} certain concepts seem to float free of physical description; SDT explains \emph{why} object-level self-ascriptions cannot be truth-evaluated from within $F$ in the first place. This also clarifies why conceptual maneuvers feel needed: the underlying semantic architecture prevents closure inside $F$, so we naturally search for conceptual explanations of the gap.
+
+\subsection{Illusionism and Parity Moves}
+\paragraph{Strategy.}
+Illusionism holds that there are no phenomenal properties over and above functional/representational organization; the felt ``hardness'' of consciousness is an introspective illusion \cite{Dennett1991,Frankish2016}. Parity or anti-zombie arguments, by contrast, attempt to neutralize the modal dialectic: if zombies are conceivable, so (arguably) are \emph{anti}-zombies for whom physical facts necessitate consciousness \cite{Frankish2007}. Both strategies undercut the metaphysical inference from conceivability to dualism—one by denying the target ontology, the other by showing a stalemate in modal space.
+
+\paragraph{Positioning.}
+Our view avoids both eliminativism and stalemate. We keep first-person discourse intact but deflate the metaphysical load by grounding the gap in \emph{semantic closure}. SDT predicts parity’s neutralization result—$F$-bisimilar systems cannot be separated by any $F$-expressible test—but also \emph{explains} it: all $F$-systems face a truth gap for self-ascriptions absent enrichment to $F'$. Rather than arguing about whether zombies (or anti-zombies) are conceivable, the constructive question becomes: which architectures implement an internal bridge $J$ (SG-sufficiency for $\Sigma$; Def.~\ref{def:SGsuff})? That reframes the debate from modal intuition to explicit conditions on meta-semantic evaluation.
+
+\subsection{Experimental Debunking of Zombie Intuitions}
+\paragraph{Strategy.}
+Experimental work indicates that ``zombie'' conceivability is framing-sensitive: phrasing the duplicate as a ``zombie'' versus a ``physical/functional duplicate'' shifts intuitive verdicts, suggesting that much of the pull is cognitive/linguistic rather than metaphysical \cite{FischerSytsma2021,Chalmers2002,Yablo1993}. These results support a \emph{deflationary} attitude toward the evidential weight of zombie intuitions.
+
+\paragraph{Positioning.}
+SDT accommodates and strengthens this deflation. If $F$-level discourse lacks internal truth-evaluation, surface intuitions about zombie scenarios will be malleable—guided by conversational templates, salience, and pragmatic heuristics local to $F$. But the semantic-closure result is independent of such empirics: even if framing were held fixed, no $F$-internal verifier can certify the truth of $F$-level self-ascriptions (Prop.~\ref{prop:no-internal-verifier}). The upshot is a layered diagnosis: psychology explains \emph{which} intuitions people report; semantics explains \emph{why} zombie arguments have recurrent appeal at all—because a truth gap for first-person self-ascriptions is built into object-level languages. In this sense, SDT both predicts and rationalizes the experimental findings while deriving the residual ``bite'' of the argument from general facts about language and truth rather than from exotic ontology.
+
+\subsection{The J-Zombie Response (and a Goalpost Shift)}
+\label{sec:jzombie}
+
+\paragraph{Statement.}
+A qualia-realist might grant SDT and reply: ``Traditional zombies are $F$-closed (no $J$). But I can conceive a \emph{J-zombie}: an $F$-bisimilar system that \emph{is} SG-sufficient for $\Sigma$ (has $J$) and \emph{still} lacks qualia. Therefore qualia remain explanatorily additional.''
+
+\begin{definition}[J-zombie]
+\label{def:jzombie}
+A \emph{J-zombie} is an $F$-bisimilar duplicate of a target system that is SG-sufficient for $\Sigma$ (Def.~\ref{def:SGsuff}) yet is stipulated to lack qualia. This is a \emph{distinct modal hypothesis}, independent of SDT.
+\end{definition}
+
+\paragraph{Dialectical status.}
+This shifts the target:
+\begin{enumerate}[leftmargin=1.5em,itemsep=0.2em]
+  \item \textbf{Original claim:} Physical/functional duplicates could lack consciousness.
+  \item \textbf{Our diagnosis:} The intuitive gap is explained by $F$-closure (no $J$), not by missing qualia (Thm.~\ref{thm:SDT}).
+  \item \textbf{Revised claim:} Physical/functional \emph{and} SG-sufficient duplicates could lack qualia.
+  \item \textbf{Status:} A \emph{new} modal claim that cannot inherit the original zombie argument’s intuitive force (cf.\ Remark~\ref{rem:zombie-clarified}).
+\end{enumerate}
+
+\paragraph{Burden of proof.}
+To motivate a J-zombie, one must supply \emph{independent} support by (i) identifying principled structural differences between $J$-systems and $(J{+}\text{qualia})$-systems beyond SG for $\Sigma$, and (ii) explaining what qualia add \emph{over and above} $J$ (e.g., cross-level/modal coordination not captured by $J$; see \S\ref{sec:conclusion}).
+
+\paragraph{``We meant J-zombies all along''.}
+Suppose the qualia-realist insists: ``We always meant systems with $J$ that lack qualia.'' This collapses for core self-ascriptions, e.g., $r^\star=\text{``I am conscious''}$, once $J$ is taken in the minimal \emph{action-guiding} sense (changes in $J$ affect reports/decisions). If a putative J-zombie $Z$ lacks consciousness, a truth-apt $J_Z$ must evaluate $r^\star$ as \textsc{false}; by action-guidance, $Z$ then diverges behaviorally from a conscious duplicate $C$ on $r^\star$, breaking $F$-parity. If instead $J_Z(r^\star)=\textsc{true}$ while $Z$ lacks qualia, then either (a) $J_Z$ is not truth-evaluating, or (b) $Z$ is not actually qualia-lacking. If $J_Z$ is undefined or ignored for $r^\star$, then $Z$ is not genuinely SG-sufficient. Thus the ``J-zombie'' either breaks parity, abandons grounding, or equivocates on truth—none preserve the original intuition.
+
+\paragraph{Takeaway.}
+SDT preserves conceivability of internal difference with behavioral parity, but blocks the metaphysical conclusion: the gap is due to semantic closure, not missing qualia. A J-zombie is a \emph{new} hypothesis that must stand on its own arguments.
+
+\subsection{The ``So What?'' Reply and Parsimony}
+\label{sec:sowhat}
+
+\paragraph{Claim \& reply.}
+``So what? Intuitions can track real features—perhaps the zombie intuition tracks \emph{both} semantic closure \emph{and} missing qualia.'' Parsimony undercuts this unless the extra posit earns its keep with \emph{new, risk-bearing commitments}. SDT already explains the data the zombie dialectic trades on: (i) $F$-parity (bisimulation), (ii) probe invariance at $F$ (Lemma~\ref{lem:probe}), (iii) systematic Gettierization for $\Sigma$ (Prop.~\ref{prop:systematic-gettier}), and (iv) framing effects (Sec.~\ref{sec:positioning}).
+
+\paragraph{Observational indifference.}
+If an added qualia variable $Q$ leaves the $F$-projection and the $J$-valuations for $\Sigma$ unchanged, then $Q$ is \emph{observationally inert} for the zombie dataset. Absent \emph{distinctive predictions} (e.g., cross-level coordination constraints that $J$-only architectures cannot match), parsimony favors the $Q$-free model.
+
+\paragraph{Burden shift \& takeaway.}
+To avoid parsimony, qualia-realists must specify testable structure beyond $J$ (e.g., inter-layer commuting constraints, modality/time coherence with decision-level consequences). Otherwise ``closure \emph{plus} qualia'' double-books the same work. SDT remains conservative and sufficient, while still leaving open higher-level roles for qualia (see \S\ref{sec:conclusion}).
+
+
+\section{Implications for AI and Cognitive Science}
+\label{sec:ai}
+
+\subsection{Operational Criterion}
+\paragraph{Epistemic self-awareness.}
+We propose an \emph{epistemic} criterion for machine self-awareness at the level relevant to SDT: the system should export a \emph{witnessed self-report} $\langle r, v\rangle$ where $r\in\Sigma$ is the tokened self-ascription and $v=J_X(f(x))\in V(X)$ is a meta-semantic valuation that (i) purports to ground $r$ and (ii) is accompanied by a checkable proof obligation $P(v,r)$ relative to the system’s \emph{own} model. This distinguishes chatty $F$-systems (tokens only) from systems with meta-semantic competence (tokens \emph{plus} valuations).
+
+\paragraph{Testing semantic grounding.}
+Practically, “AI consciousness tests” should become tests of \emph{semantic grounding}: can the model not only emit $r$ but also supply $v$ and satisfy stability/robustness constraints on $v$? This moves beyond Turing-style behaviorism without lapsing into unverifiable qualia talk: we do not ask \emph{what it is like}, we ask whether the architecture implements $J$-style evaluation for $\Sigma$ and treats it as action-guiding evidence.
+
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{Two-channel reports:} require separate channels for $r$ (utterance) and $v$ (valuation); reject systems that conflate them.
+  \item \textbf{Counterfactual stability:} under small $F$-preserving perturbations, $v$ should remain consistent (\emph{safety} in Sec.~\ref{sec:gettier}); tokens alone don’t count.
+  \item \textbf{Ablation sensitivity:} disabling the $J$-path should degrade $v$ (and downstream decisions that cite $v$) while leaving generic fluency largely intact.
+  \item \textbf{Calibration:} require that $v$’s confidence tracks empirical error on held-out introspective tasks (\emph{proper scoring} within the model’s own claims).
+  \item \textbf{Causality:} decisions justified by $v$ should change when $v$ changes (no post-hoc rationalization).
+\end{itemize}
+
+\subsection{Research Program}
+\paragraph{Agenda.}
+A compact agenda:
+\begin{enumerate}[leftmargin=1.5em]
+  \item \textbf{Specify $\Sigma$:} settle target self-ascriptions (thin: ``I am in state $s$''; thick: ``I know that I see red'').
+  \item \textbf{Formalize $J$ and $P$:} design valuation types $V(X)$ (truth, safety, confidence) and proof obligations $P(v,r)$ that are internally checkable.
+  \item \textbf{Probe design:} build tasks that \emph{demand} valuations (counterfactuals, time consistency, self-revision), not mere token emission.
+  \item \textbf{Robustness suite:} evaluate Gettierization under distribution shift: measure drift between $r$ and $v$ when cues are misleading.
+  \item \textbf{Ablation studies:} isolate $J$ pathways; verify differential degradation patterns predicted by SDT.
+  \item \textbf{Benchmarking:} release a public $\Sigma$–$J$ testbed with scoring rules for stability, calibration, and causal use of $v$.
+\end{enumerate}
+
+\paragraph{Summary.}
+The goal is not to \emph{solve} consciousness but to pin down which architectural enrichments are needed to avoid \emph{systematic} Gettierization of self-knowledge. On SDT’s minimal reading, success means implementing a reliable $J$ for a chosen $\Sigma$ and showing that $v$ is stable, action-guiding, and distinct from surface-level tokening.
+
+\section{Conclusion}
+\label{sec:conclusion}
+
+\paragraph{Reproducing the gap.}
+We have argued that the zombie argument’s apparent metaphysical gap can be reproduced from purely semantic considerations. When an agent is $F$-closed, truth for its own self-ascriptions is not definable within $F$; first-person discourse remains \emph{behaviorally} available yet \emph{epistemically} ungrounded. Our \emph{semantic deflationary} account (SDT) explains this by appeal to Tarskian closure rather than to missing qualia. On the minimal role we isolate, what matters for dissolving the zombie’s bite is an \emph{enrichment} to $F'$ together with a grounding morphism $J$ for a target class $\Sigma$ of self-ascriptions. Bisimilarity at $F$ then coexists with a meta-semantic divergence at $F'$.
+
+\paragraph{Relocating the gap.}
+The upshot is a shift in explanatory burden: instead of inferring exotic ontology from zombie conceivability, we diagnose a general failure of semantic self-closure. Coalgebraic behavior, undefinability of truth, and Gettierization fall into a single picture: $F$ produces self-ascriptive tokens; $F'$ evaluates them; without a bridge $J$, justification and truth decouple by construction. This reframing preserves what made the zombie argument compelling (behavioral parity with a felt gap) while relocating the gap to the logic of self-reference and truth.
+
+\paragraph{Scope and openness.}
+Our proposal is \emph{deflationary without denial}. We have not claimed that semantic grounding \emph{is} consciousness, nor that it exhausts consciousness’s functions. The thesis is role-minimal: for the purposes of the zombie dialectic, SG for $\Sigma$ suffices to block the inference from behavioral parity to metaphysical dualism. Beyond that role, richer metaphysical accounts may still matter. Moreover, while SDT targets the zombie argument specifically, other arguments for phenomenal properties—such as inverted spectrum scenarios or knowledge arguments (Mary's room)—may have different structural features requiring separate analysis. Whether semantic closure can similarly deflate these arguments remains an open question, though the coalgebraic framework naturally extends to them. In particular, the posit of \emph{qualia} could enter at higher levels of description---for example, by supplying principles that \emph{coordinate} valuations across observation layers (e.g., $F',F'',\dots$), enforce cross-modal or diachronic coherence, or explain why any $J$-style grounding exists and is stable in the first place. Nothing here rules out such hypotheses; SDT simply shows they are not required to reproduce the zombie structure.
+
+\paragraph{Cross-level coherence.}
+One natural direction is to treat phenomenal properties (if posited) as global coherence constraints over towers of observation functors, ensuring that meta-evaluations commute across modalities and time (a “coordination” role). On this view, qualia would not function as object-language add-ons but as \emph{organizing principles} for inter-level alignment---potentially explaining why certain systems achieve robust $J$-style grounding (and safety) while others Gettierize under perturbation. SDT is compatible with such cross-level stories; it merely identifies the semantic bottleneck that any successful account must pass through.
+
+\paragraph{Outlook.}
+Practically, SDT suggests operational targets for AI and cognitive science: separate channels for token and valuation, stability and safety criteria for $J$, and ablation-sensitive architectures where decisions causally depend on meta-semantic evaluation. Philosophically, it recasts the zombie dispute as a question about \emph{which} systems can close their own truth gap for self-ascriptions, and \emph{how} that closure coordinates across levels. Whether one ultimately grounds this coordination in computational design, biological realization, or a substantive metaphysics of experience is left open. What SDT contributes is a precise reason why the zombie’s bite does not, by itself, force our hand toward metaphysical conclusions: the gap it dramatizes is a familiar feature of semantic self-reference, not a decisive clue about the furniture of the world.
+
+\section*{Declarations}
+
+\noindent\textbf{Funding.}
+No external funding was received for this work.
+
+\medskip
+\noindent\textbf{Competing interests.}
+The author declares no competing interests.
+
+\medskip
+\noindent\textbf{Data and code availability.}
+Not applicable. No new datasets or analysis code were generated.
+
+\medskip
+\noindent\textbf{Author contributions.}
+Sole author: conceptualization, methodology, formal analysis, and writing.
+
+\medskip
+\noindent\textbf{Acknowledgments.}
+The author used large language models for drafting, proofing, and \LaTeX{} formatting assistance, and for critical review suggestions: ChatGPT (GPT-5). The author is responsible for the content and any errors.
+
+\medskip
+\noindent\textbf{License.}
+This preprint is distributed under the Creative Commons Attribution 4.0 International (CC BY 4.0) license.
+
+
+\bibliographystyle{plainnat}
+\bibliography{ZombieSemanticDeflation}
+
+\end{document}
